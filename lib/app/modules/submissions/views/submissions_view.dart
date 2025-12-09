@@ -31,28 +31,50 @@ class SubmissionsView extends GetView<SubmissionsController> {
             ),
             const SizedBox(height: 20),
 
-            // Tabs
-            Row(
-              children: [
-                _tab("Tous (05)", true),
-                _tab("En attente (02)", false),
-                _tab("Payés (03)", false),
-              ],
+            // Scrollable Tabs
+            SizedBox(
+              height: 40,
+              child: Obx(() => ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: 4, // Tous, En attente, Payés, Expirées
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () => controller.selectTab(index),
+                    child: Obx(() => _tab(
+                      controller.getTabLabel(index),
+                      controller.selectedTab.value == index,
+                    )),
+                  );
+                },
+              )),
             ),
             const SizedBox(height: 20),
 
-            // List
+            // Filtered List
             Expanded(
-              child: ListView(
-                children: const [
-                  ItemCard(title: "Nom de l'article", subtitle: "M. Martins AZEMIN", price: "12.000 Fcfa", status: "En attente"),
-                  ItemCard(title: "Nom de l'article", subtitle: "M. Martins AZEMIN", price: "12.000 Fcfa", status: "En attente"),
-                  ItemCard(title: "Nom de l'article", subtitle: "M. Martins AZEMIN", price: "12.000 Fcfa", status: "En attente"),
-                  ItemCard(title: "Nom de l'article", subtitle: "M. Martins AZEMIN", price: "12.000 Fcfa", status: "Payées"),
-                  ItemCard(title: "Nom de l'article", subtitle: "M. Martins AZEMIN", price: "12.000 Fcfa", status: "Payées"),
-                  ItemCard(title: "Nom de l'article", subtitle: "M. Martins AZEMIN", price: "12.000 Fcfa", status: "Expirées"),
-                ],
-              ),
+              child: Obx(() {
+                if (controller.filteredSubmissions.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'Aucune soumission',
+                      style: GoogleFonts.poppins(color: Colors.grey),
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  itemCount: controller.filteredSubmissions.length,
+                  itemBuilder: (context, index) {
+                    final submission = controller.filteredSubmissions[index];
+                    return ItemCard(
+                      title: submission.productName,
+                      subtitle: submission.buyerName,
+                      price: submission.formattedPrice,
+                      status: submission.statusText,
+                    );
+                  },
+                );
+              }),
             ),
           ],
         ),
@@ -68,11 +90,14 @@ class SubmissionsView extends GetView<SubmissionsController> {
         color: isSelected ? AppColors.primaryBlue.withOpacity(0.1) : Colors.transparent,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(
-        text,
-        style: GoogleFonts.poppins(
-          color: isSelected ? AppColors.primaryBlue : Colors.black,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      child: Center(
+        child: Text(
+          text,
+          style: GoogleFonts.poppins(
+            color: isSelected ? AppColors.primaryBlue : Colors.black,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            fontSize: 13,
+          ),
         ),
       ),
     );

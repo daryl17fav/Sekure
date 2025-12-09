@@ -140,9 +140,11 @@ class RegisterSellerController extends GetxController {
         colorText: Colors.white,
       );
       
-      // Navigation will be handled by the view
+      // Pass email to verification page for display
+      // Navigation will be handled by the view with email argument
     });
   }
+
 
   // Mock file picker
   void pickFile() {

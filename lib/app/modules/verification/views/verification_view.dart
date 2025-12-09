@@ -37,29 +37,54 @@ class VerificationView extends GetView<VerificationController> {
               children: [
                 Text("Vérification", style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 10),
-                Text("Veuillez entrer le code envoyé à\nl'adresse abc...xyz@gmail.com", textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 13)),
+                Obx(() => Text(
+                  "Veuillez entrer le code envoyé à\nl'adresse ${controller.maskedEmail.value}",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(fontSize: 13),
+                )),
                 Text("C'est bien vous, n'est-ce pas ?", textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 25),
                 
-                // OTP Boxes
+                // OTP Boxes - Interactive
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: List.generate(5, (index) => _otpBox()),
+                  children: [
+                    _otpBox(controller.otp1Controller, controller.otp1Focus, 1),
+                    _otpBox(controller.otp2Controller, controller.otp2Focus, 2),
+                    _otpBox(controller.otp3Controller, controller.otp3Focus, 3),
+                    _otpBox(controller.otp4Controller, controller.otp4Focus, 4),
+                    _otpBox(controller.otp5Controller, controller.otp5Focus, 5),
+                  ],
                 ),
                 
                 const SizedBox(height: 20),
-                Text("Vous n'avez pas reçu de mail ? Renvoyer (00:59)", style: GoogleFonts.poppins(color: Colors.grey, fontSize: 12, decoration: TextDecoration.underline)),
+                Obx(() => GestureDetector(
+                  onTap: controller.canResend.value ? controller.resendOTP : null,
+                  child: Text(
+                    controller.canResend.value
+                        ? "Vous n'avez pas reçu de mail ? Renvoyer"
+                        : "Vous n'avez pas reçu de mail ? Renvoyer (${controller.timerDisplay})",
+                    style: GoogleFonts.poppins(
+                      color: controller.canResend.value ? AppColors.primaryBlue : Colors.grey,
+                      fontSize: 12,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                )),
                 const SizedBox(height: 20),
-                 const SizedBox(height: 20),
-                PrimaryButton(
-                  text: "Vérifier", 
-                  onPressed: () {
-                    // Pass the role argument forward
-                    final String? role = Get.arguments as String?;
-                    Get.toNamed(Routes.CREATE_PASSWORD, arguments: role);
+                Obx(() => PrimaryButton(
+                  text: controller.isVerifying.value ? "Vérification..." : "Vérifier",
+                  onPressed: controller.isVerifying.value ? null : () {
+                    controller.verifyOTP();
+                    // After successful verification, navigate
+                    Future.delayed(const Duration(milliseconds: 1500), () {
+                      final String? role = Get.arguments is Map ? Get.arguments['role'] : Get.arguments as String?;
+                      Get.toNamed(Routes.CREATE_PASSWORD, arguments: role);
+                    });
                   },
-                ),
+                )),
               ],
+
             ),
           )
         ],
@@ -72,13 +97,30 @@ class VerificationView extends GetView<VerificationController> {
     );
   }
 
-  Widget _otpBox() {
+
+  Widget _otpBox(TextEditingController textController, FocusNode focusNode, int index) {
     return Container(
       width: 50,
       height: 50,
-      decoration: BoxDecoration(color: AppColors.inputFill, borderRadius: BorderRadius.circular(8)),
-      alignment: Alignment.center,
-      child: const Text("--", style: TextStyle(fontSize: 18, color: Colors.grey)),
+      decoration: BoxDecoration(
+        color: AppColors.inputFill,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: TextField(
+        controller: textController,
+        focusNode: focusNode,
+        textAlign: TextAlign.center,
+        keyboardType: TextInputType.number,
+        maxLength: 1,
+        style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold),
+        decoration: const InputDecoration(
+          counterText: '',
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.zero,
+        ),
+        onChanged: (value) => controller.onOTPChanged(value, index),
+      ),
     );
   }
+
 }

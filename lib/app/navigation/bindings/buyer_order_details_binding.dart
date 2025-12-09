@@ -1,0 +1,12 @@
+import 'package:get/get.dart';
+
+import '../../modules/buyer_order_details/controllers/buyer_order_details_controller.dart';
+
+class BuyerOrderDetailsBinding extends Bindings {
+  @override
+  void dependencies() {
+    Get.lazyPut<BuyerOrderDetailsController>(
+      () => BuyerOrderDetailsController(),
+    );
+  }
+}

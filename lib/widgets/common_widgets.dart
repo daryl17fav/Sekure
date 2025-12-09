@@ -59,8 +59,19 @@ class CustomTextField extends StatelessWidget {
   final String hint;
   final bool isPassword;
   final IconData? suffixIcon;
+  final TextEditingController? controller;
+  final TextInputType? keyboardType;
+  final VoidCallback? onSuffixIconTap;
 
-  const CustomTextField({super.key, required this.hint, this.isPassword = false, this.suffixIcon});
+  const CustomTextField({
+    super.key,
+    required this.hint,
+    this.isPassword = false,
+    this.suffixIcon,
+    this.controller,
+    this.keyboardType,
+    this.onSuffixIconTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -71,13 +82,20 @@ class CustomTextField extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: TextField(
+        controller: controller,
         obscureText: isPassword,
+        keyboardType: keyboardType,
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: GoogleFonts.poppins(color: Colors.grey[400], fontSize: 14),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-          suffixIcon: suffixIcon != null ? Icon(suffixIcon, color: AppColors.primaryBlue) : null,
+          suffixIcon: suffixIcon != null 
+            ? GestureDetector(
+                onTap: onSuffixIconTap,
+                child: Icon(suffixIcon, color: AppColors.primaryBlue),
+              )
+            : null,
         ),
       ),
     );
@@ -86,7 +104,7 @@ class CustomTextField extends StatelessWidget {
 
 class PrimaryButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   const PrimaryButton({super.key, required this.text, required this.onPressed});
 

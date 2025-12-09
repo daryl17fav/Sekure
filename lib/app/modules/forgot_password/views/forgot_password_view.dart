@@ -51,19 +51,19 @@ class ForgotPasswordView extends GetView<ForgotPasswordController> {
                 const SizedBox(height: 30),
                 
                 // Email Input
-                const CustomTextField(
+                CustomTextField(
                   hint: "Adresse mail*",
+                  controller: controller.emailController,
+                  keyboardType: TextInputType.emailAddress,
                 ),
                 
                 const SizedBox(height: 20),
                 
                 // Send Button
-                PrimaryButton(
-                  text: "Envoyer",
-                  onPressed: () {
-                    Get.back(); // or navigate to a confirmation page
-                  },
-                ),
+                Obx(() => PrimaryButton(
+                  text: controller.isLoading.value ? "Envoi..." : "Envoyer",
+                  onPressed: controller.isLoading.value ? null : controller.sendResetEmail,
+                )),
                 const SizedBox(height: 20),
               ],
             ),

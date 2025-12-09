@@ -26,13 +26,18 @@ class HomeView extends GetView<HomeController> {
               // Header
               Row(
                 children: [
-                  const CircleAvatar(backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11')),
+                  Obx(() => CircleAvatar(
+                    backgroundImage: NetworkImage(controller.userAvatar.value),
+                  )),
                   const SizedBox(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text("Salut", style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey)),
-                      Text("John Evian Sultan", style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14)),
+                      Obx(() => Text(
+                        controller.userName.value,
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14),
+                      )),
                     ],
                   ),
                   const Spacer(),
@@ -49,7 +54,10 @@ class HomeView extends GetView<HomeController> {
                 child: Column(
                   children: [
                     Text("Bilan des ventes", style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey)),
-                    Text("9,950 Fcfa", style: GoogleFonts.poppins(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.primaryBlue)),
+                    Obx(() => Text(
+                      controller.formattedSales,
+                      style: GoogleFonts.poppins(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.primaryBlue),
+                    )),
                   ],
                 ),
               ),
@@ -96,19 +104,29 @@ class HomeView extends GetView<HomeController> {
               ),
               const SizedBox(height: 25),
 
-              // Transactions List
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("Dernières transactions", style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16)),
-                  Text("tout voir", style: GoogleFonts.poppins(color: AppColors.primaryRed, fontSize: 12)),
-                ],
-              ),
-              const SizedBox(height: 15),
               
-              const ItemCard(title: "John DOE", subtitle: "01/09/25 à 19h48", price: "-12K Fcfa", isNegative: true),
-              const ItemCard(title: "John DOE", subtitle: "01/09/25 à 19h48", price: "+12K Fcfa", isNegative: false),
-              const ItemCard(title: "John DOE", subtitle: "01/09/25 à 19h48", price: "-12K Fcfa", isNegative: true),
+              // Transactions List
+              Obx(() => Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Dernières transactions", style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text("tout voir", style: GoogleFonts.poppins(color: AppColors.primaryRed, fontSize: 12)),
+                    ],
+                  ),
+                  const SizedBox(height: 15),
+                  
+                  ...controller.transactions.map((transaction) {
+                    return ItemCard(
+                      title: transaction.name,
+                      subtitle: transaction.date,
+                      price: transaction.formattedAmount,
+                      isNegative: transaction.isNegative,
+                    );
+                  }).toList(),
+                ],
+              )),
             ],
           ),
         ),

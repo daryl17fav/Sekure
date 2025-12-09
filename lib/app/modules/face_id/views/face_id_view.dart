@@ -30,8 +30,57 @@ class FaceIdView extends GetView<FaceIdController> {
                 const SizedBox(height: 10),
                 Text("Autorisez l'accès à Face ID pour une\nconnexion plus sécurisé et rapide.", textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 14)),
                 const SizedBox(height: 30),
-                Icon(Icons.face_retouching_natural, size: 80, color: Colors.black), // Use SVG if available
-                const SizedBox(height: 50),
+                
+                // Face Icon (Tappable)
+                GestureDetector(
+                  onTap: controller.startFaceIdScan,
+                  child: Obx(() => Icon(
+                    Icons.face_retouching_natural,
+                    size: 80,
+                    color: controller.scanSuccess.value
+                      ? Colors.green
+                      : controller.scanFailed.value
+                        ? Colors.red
+                        : controller.isScanning.value
+                          ? Colors.blue
+                          : Colors.black,
+                  )),
+                ),
+                const SizedBox(height: 15),
+                
+                // Status Text
+                Obx(() => Text(
+                  controller.scanSuccess.value
+                    ? "Authentification réussie!"
+                    : controller.scanFailed.value
+                      ? "Échec - Réessayez"
+                      : controller.isScanning.value
+                        ? "Scanning..."
+                        : "Appuyez pour scanner",
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    color: controller.scanSuccess.value
+                      ? Colors.green
+                      : controller.scanFailed.value
+                        ? Colors.red
+                        : Colors.grey,
+                  ),
+                )),
+                const SizedBox(height: 20),
+                
+                // Skip Button
+                TextButton(
+                  onPressed: controller.skipFaceId,
+                  child: Text(
+                    "Plus tard",
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      color: Colors.grey,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
               ],
             ),
           ),

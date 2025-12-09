@@ -17,11 +17,22 @@ class BuyerOrderDetailsView extends GetView<BuyerOrderDetailsController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 18), onPressed: () => Get.back()),
-        title: Text("Commande n°165TYFHJG", style: GoogleFonts.poppins(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+        title: Obx(() => Text(
+          "Commande ${controller.orderNumber.value}",
+          style: GoogleFonts.poppins(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
+        )),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 20),
-            child: Center(child: Text("Annuler", style: GoogleFonts.poppins(color: AppColors.primaryRed, fontWeight: FontWeight.bold, fontSize: 12))),
+            child: GestureDetector(
+              onTap: controller.showCancellationDialog,
+              child: Center(
+                child: Text(
+                  "Annuler",
+                  style: GoogleFonts.poppins(color: AppColors.primaryRed, fontWeight: FontWeight.bold, fontSize: 12),
+                ),
+              ),
+            ),
           )
         ],
       ),
@@ -33,45 +44,45 @@ class BuyerOrderDetailsView extends GetView<BuyerOrderDetailsController> {
               child: Column(
                 children: [
                   // Article
-                  Container(
+                  Obx(() => Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(color: AppColors.inputFill, borderRadius: BorderRadius.circular(12)),
                     child: Row(
                       children: [
-                        Container(width: 50, height: 50, color: Colors.grey[300]), // Placeholder
+                        Container(width: 50, height: 50, color: Colors.grey[300]),
                         const SizedBox(width: 15),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("Nom de l'article", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-                            Text("M. Martins AZEMIN", style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey)),
+                            Text(controller.productName.value, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+                            Text(controller.vendorName.value, style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey)),
                           ],
                         ),
                         const Spacer(),
-                        Text("12K Fcfa", style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16)),
+                        Text(controller.formattedAmount, style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16)),
                       ],
                     ),
-                  ),
+                  )),
                   const SizedBox(height: 20),
                   
                   // Details Table
-                  Container(
+                  Obx(() => Container(
                     padding: const EdgeInsets.all(15),
                     decoration: BoxDecoration(color: AppColors.inputFill, borderRadius: BorderRadius.circular(12)),
                     child: Column(
                       children: [
-                         _detailRow("Vendeur", "M. Martins AZEMIN"),
+                         _detailRow("Vendeur", controller.vendorName.value),
                          const SizedBox(height: 8),
-                         _detailRow("Date", "Mardi 17 Septembre 2025"),
+                         _detailRow("Date", controller.transactionDate.value),
                          const SizedBox(height: 8),
-                         _detailRow("Transaction ID", "#678YUIHFGCJ876TY"),
+                         _detailRow("Transaction ID", controller.transactionId.value),
                       ],
                     ),
-                  ),
+                  )),
                    const SizedBox(height: 20),
 
                   // Delivery Address
-                   Container(
+                   Obx(() => Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(color: AppColors.inputFill, borderRadius: BorderRadius.circular(12)),
                     child: Row(
@@ -82,12 +93,12 @@ class BuyerOrderDetailsView extends GetView<BuyerOrderDetailsController> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text("Adresse de livraison", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-                            Text("22 Rue du Chinks, Malibu, ETAT", style: GoogleFonts.poppins(fontSize: 12, color: Colors.black87)),
+                            Text(controller.deliveryAddress.value, style: GoogleFonts.poppins(fontSize: 12, color: Colors.black87)),
                           ],
                         ),
                       ],
                     ),
-                  ),
+                  )),
                   const SizedBox(height: 20),
 
                   // Timeline (Simplified for brevity)
@@ -138,7 +149,7 @@ class BuyerOrderDetailsView extends GetView<BuyerOrderDetailsController> {
                       elevation: 0,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
-                    onPressed: () => _showReceivedDialog(context),
+                    onPressed: controller.showValidationDialog,
                     child: Text("J'ai reçu ma commande", style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)), // Text color usually white in your design, but button bg is light. Check design: text is likely Blue or White. Image shows White Text on Light Blue BG is low contrast, likely Text is Blue or Button is Darker Blue. Based on image "J'ai reçu ma commande" button is Light Purple/Blue. Let's make text White for now or PrimaryBlue.
                   ),
                 ),
@@ -165,50 +176,5 @@ class BuyerOrderDetailsView extends GetView<BuyerOrderDetailsController> {
     );
   }
 
-  // --- Confirmation Dialog ---
-  void _showReceivedDialog(BuildContext context) {
-    Get.dialog(
-      Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text("Validation", style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 15),
-              Text(
-                "Vous êtes sur le point de déclarer avoir\nreçu votre commande et qu'elle est\nconforme. Êtes vous sûr de vouloir\npoursuivre cette action ?",
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(fontSize: 13),
-              ),
-              const SizedBox(height: 25),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 100, height: 40,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryRed),
-                      onPressed: () => Get.back(),
-                      child: Text("Non", style: GoogleFonts.poppins(color: Colors.white)),
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                  TextButton(
-                    onPressed: () {
-                      Get.back();
-                      // Logic for Success
-                    },
-                    child: Text("Oui", style: GoogleFonts.poppins(color: AppColors.primaryBlue, fontWeight: FontWeight.bold)),
-                  )
-                ],
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+
 }

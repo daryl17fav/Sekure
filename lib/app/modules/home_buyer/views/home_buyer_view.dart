@@ -30,13 +30,18 @@ class HomeBuyerView extends GetView<HomeBuyerController> {
               // Header
               Row(
                 children: [
-                  const CircleAvatar(backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=8')),
+                  Obx(() => CircleAvatar(
+                    backgroundImage: NetworkImage(controller.userAvatar.value),
+                  )),
                   const SizedBox(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text("Salut", style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey)),
-                      Text("John Evian Sultan", style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14)),
+                      Obx(() => Text(
+                        controller.userName.value,
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14),
+                      )),
                     ],
                   ),
                   const Spacer(),
@@ -53,7 +58,10 @@ class HomeBuyerView extends GetView<HomeBuyerController> {
                 child: Column(
                   children: [
                     Text("Bilan des achats", style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey)),
-                    Text("9,950 Fcfa", style: GoogleFonts.poppins(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.primaryBlue)),
+                    Obx(() => Text(
+                      controller.formattedBalance,
+                      style: GoogleFonts.poppins(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.primaryBlue),
+                    )),
                   ],
                 ),
               ),
@@ -102,6 +110,7 @@ class HomeBuyerView extends GetView<HomeBuyerController> {
               ),
               const SizedBox(height: 25),
 
+              
               // Validated Orders List
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -112,9 +121,15 @@ class HomeBuyerView extends GetView<HomeBuyerController> {
               ),
               const SizedBox(height: 15),
               
-              const ItemCard(title: "John DOE", subtitle: "01/09/25 à 19h48", price: "12.000 Fcfa"),
-              const ItemCard(title: "John DOE", subtitle: "01/09/25 à 19h48", price: "12.000 Fcfa"),
-              const ItemCard(title: "John DOE", subtitle: "01/09/25 à 19h48", price: "12.000 Fcfa"),
+              Obx(() => Column(
+                children: controller.validatedOrders.map((order) {
+                  return ItemCard(
+                    title: order.name,
+                    subtitle: order.date,
+                    price: order.formattedAmount,
+                  );
+                }).toList(),
+              )),
             ],
           ),
         ),

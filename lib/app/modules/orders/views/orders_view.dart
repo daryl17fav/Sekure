@@ -21,34 +21,47 @@ class OrdersView extends GetView<OrdersController> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              children: [
-                _tab("Tous (05)", false), // Example state
-                _tab("En attente (02)", true), // Selected state example
-                _tab("Payés (02)", false),
-                _tab("Refusés (01)", false),
-              ],
-            ),
+            child: Obx(() => Row(
+              children: List.generate(4, (index) {
+                return GestureDetector(
+                  onTap: () => controller.selectTab(index),
+                  child: Obx(() => _tab(
+                    controller.getTabLabel(index),
+                    controller.selectedTab.value == index,
+                  )),
+                );
+              }),
+            )),
           ),
           const SizedBox(height: 20),
 
           // Grid Content
           Expanded(
-            child: GridView.count(
-              crossAxisCount: 2,
-              mainAxisSpacing: 15,
-              crossAxisSpacing: 15,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              childAspectRatio: 0.75, // Adjusts height/width ratio
-              children: [
-                _buildGridCard("Nom de l'article", "Nom du client", "12.000 Fcfa", 0), // Pending
-                _buildGridCard("Nom de l'article", "Nom du client", "12.000 Fcfa", 0), // Pending
-                _buildGridCard("Nom de l'article", "Nom du client", "12.000 Fcfa", 1), // Paid
-                _buildGridCard("Nom de l'article", "Nom du client", "12.000 Fcfa", 1), // Paid
-                _buildGridCard("Nom de l'article", "Nom du client", "12.000 Fcfa", 2), // Rejected/Expired
-                _buildGridCard("Nom de l'article", "Nom du client", "12.000 Fcfa", 2),
-              ],
-            ),
+            child: Obx(() {
+              if (controller.filteredOrders.isEmpty) {
+                return Center(
+                  child: Text(
+                    'Aucune commande',
+                    style: GoogleFonts.poppins(color: Colors.grey),
+                  ),
+                );
+              }
+
+              return GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 15,
+                  crossAxisSpacing: 15,
+                  childAspectRatio: 0.75,
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                itemCount: controller.filteredOrders.length,
+                itemBuilder: (context, index) {
+                  final order = controller.filteredOrders[index];
+                  return _buildGridCard(order);
+                },
+              );
+            }),
           ),
         ],
       ),
@@ -74,21 +87,21 @@ class OrdersView extends GetView<OrdersController> {
     );
   }
 
-  // 0 = Pending, 1 = Paid, 2 = Rejected
-  Widget _buildGridCard(String title, String subtitle, String price, int status) {
+  // Build grid card from order
+  Widget _buildGridCard(OrderCommand order) {
     Color statusColor;
     IconData statusIcon;
 
-    switch (status) {
-      case 1:
+    switch (order.status) {
+      case OrderStatus.paid:
         statusColor = AppColors.successGreen;
         statusIcon = Icons.check_circle;
         break;
-      case 2:
+      case OrderStatus.refused:
         statusColor = AppColors.primaryRed;
         statusIcon = Icons.cancel;
         break;
-      case 0:
+      case OrderStatus.pending:
       default:
         statusColor = AppColors.pendingOrange;
         statusIcon = Icons.access_time_filled;
@@ -96,7 +109,7 @@ class OrdersView extends GetView<OrdersController> {
     }
 
     return GestureDetector(
-      onTap: () => Get.toNamed(Routes.ORDER_DETAILS),
+      onTap: () => Get.toNamed(Routes.ORDER_DETAILS, arguments: order),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -112,8 +125,8 @@ class OrdersView extends GetView<OrdersController> {
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                  image: const DecorationImage(
-                    image: NetworkImage('https://i.pravatar.cc/150?img=5'), // Placeholder
+                  image: DecorationImage(
+                    image: NetworkImage(order.image),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -131,14 +144,25 @@ class OrdersView extends GetView<OrdersController> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13)),
-                        Text(subtitle, style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey)),
+                        Text(
+                          order.productName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
+                        Text(
+                          order.clientName,
+                          style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey),
+                        ),
                       ],
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(price, style: GoogleFonts.poppins(color: statusColor, fontWeight: FontWeight.bold, fontSize: 13)),
+                        Text(
+                          order.formattedPrice,
+                          style: GoogleFonts.poppins(color: statusColor, fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
                         Icon(statusIcon, color: statusColor, size: 16),
                       ],
                     )

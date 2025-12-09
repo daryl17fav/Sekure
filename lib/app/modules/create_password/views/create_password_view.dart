@@ -43,24 +43,42 @@ class CreatePasswordView extends GetView<CreatePasswordController> {
                     style: GoogleFonts.poppins(color: AppColors.primaryRed, fontSize: 11)
                   ),
                   const SizedBox(height: 20),
-                  const CustomTextField(hint: "Mot de passe*", isPassword: true, suffixIcon: Icons.visibility_outlined),
-                  const CustomTextField(hint: "Confirmer le mot de passe*", isPassword: true, suffixIcon: Icons.visibility_outlined),
+                  Obx(() => CustomTextField(
+                    hint: "Mot de passe*",
+                    controller: controller.passwordController,
+                    isPassword: !controller.isPasswordVisible.value,
+                    suffixIcon: controller.isPasswordVisible.value ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                    onSuffixIconTap: controller.togglePasswordVisibility,
+                  )),
+                  Obx(() => CustomTextField(
+                    hint: "Confirmer le mot de passe*",
+                    controller: controller.confirmPasswordController,
+                    isPassword: !controller.isConfirmPasswordVisible.value,
+                    suffixIcon: controller.isConfirmPasswordVisible.value ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                    onSuffixIconTap: controller.toggleConfirmPasswordVisibility,
+                  )),
                   const SizedBox(height: 10),
-                  PrimaryButton(
-                    text: "Sécuriser", 
-                    onPressed: () {
-                      // Get the role from arguments passed through navigation
-                      final String? role = Get.arguments as String?;
-                      
-                      // Navigate based on role
-                      if (role == 'seller') {
-                        Get.toNamed(Routes.TOUCH_ID_AUTH);
-                      } else {
-                        // Default to Face ID for buyers
-                        Get.toNamed(Routes.FACE_ID);
-                      }
+                  Obx(() => PrimaryButton(
+                    text: controller.isLoading.value ? "Sécurisation..." : "Sécuriser",
+                    onPressed: controller.isLoading.value ? null : () {
+                      controller.createPassword();
+                      // After successful password creation, navigate
+                      Future.delayed(const Duration(milliseconds: 1500), () {
+                        if (!controller.isLoading.value) {
+                          // Get the role from arguments
+                          final String? role = Get.arguments as String?;
+                          
+                          // Navigate based on role
+                          if (role == 'seller') {
+                            Get.toNamed(Routes.TOUCH_ID_AUTH);
+                          } else {
+                            // Default to Face ID for buyers
+                            Get.toNamed(Routes.FACE_ID);
+                          }
+                        }
+                      });
                     },
-                  ),
+                  )),
                 ],
               ),
           ),

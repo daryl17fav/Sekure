@@ -33,48 +33,80 @@ class TouchIdVerifyView extends GetView<TouchIdVerifyController> {
 
           // 2. The Center Scanning Box
           Center(
-            child: Container(
+            child: Obx(() => AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
               width: 180,
               height: 180,
               decoration: BoxDecoration(
-                color: const Color(0xFFE8EAF1), // The light grey/gradient box
+                color: controller.scanSuccess.value 
+                  ? Colors.green.withOpacity(0.1)
+                  : controller.scanFailed.value
+                    ? Colors.red.withOpacity(0.1)
+                    : const Color(0xFFE8EAF1),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 20,
+                    color: controller.isScanning.value 
+                      ? Colors.blue.withOpacity(0.3)
+                      : Colors.black.withOpacity(0.05),
+                    blurRadius: controller.isScanning.value ? 30 : 20,
                     offset: const Offset(0, 10),
                   )
                 ],
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFF6F7F9),
-                    Color(0xFFDDE1EF),
-                  ],
-                ),
+                gradient: controller.scanSuccess.value
+                  ? null
+                  : controller.scanFailed.value
+                    ? null
+                    : const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0xFFF6F7F9),
+                          Color(0xFFDDE1EF),
+                        ],
+                      ),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Fingerprint Icon
-                  const Icon(Icons.fingerprint, size: 70, color: Colors.grey),
+                  Obx(() => Icon(
+                    Icons.fingerprint,
+                    size: 70,
+                    color: controller.scanSuccess.value
+                      ? Colors.green
+                      : controller.scanFailed.value
+                        ? Colors.red
+                        : controller.isScanning.value
+                          ? Colors.blue
+                          : Colors.grey,
+                  )),
                   const SizedBox(height: 10),
                   // Text
-                  Text(
-                    "Touch ID",
+                  Obx(() => Text(
+                    controller.scanSuccess.value
+                      ? "Succès!"
+                      : controller.scanFailed.value
+                        ? "Échec"
+                        : controller.isScanning.value
+                          ? "Scanning..."
+                          : "Touch ID",
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black,
+                      color: controller.scanSuccess.value
+                        ? Colors.green
+                        : controller.scanFailed.value
+                          ? Colors.red
+                          : Colors.black,
                     ),
-                  ),
+                  )),
                 ],
               ),
-            ),
+            )),
           ),
         ],
+
       ),
     );
   }

@@ -43,10 +43,10 @@ class RoleSelectionView extends GetView<RoleSelectionController> {
                 const SizedBox(height: 20),
                 
                 // Seller Button
-                _buildRoleButton("Vendeur", AppColors.sellerPink, AppColors.primaryRed, onTap: () => Get.toNamed(Routes.REGISTER_SELLER)),
+                _buildRoleButton("Vendeur", AppColors.sellerPink, AppColors.primaryRed, onTap: controller.selectSellerRole),
                 const SizedBox(height: 15),
                 // Buyer Button
-                _buildRoleButton("Acheteur", AppColors.buyerBlue, AppColors.primaryBlue, onTap: () => Get.toNamed(Routes.REGISTER)),
+                _buildRoleButton("Acheteur", AppColors.buyerBlue, AppColors.primaryBlue, onTap: controller.selectBuyerRole),
                 
                 const SizedBox(height: 20),
                 Row(
@@ -54,11 +54,12 @@ class RoleSelectionView extends GetView<RoleSelectionController> {
                   children: [
                     Text("Vous possédez déjà un compte ? ", style: GoogleFonts.poppins(fontSize: 12)),
                     GestureDetector(
-                      onTap: () => Get.back(),
+                      onTap: controller.goToLogin,
                       child: Text("Connectez-vous", style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primaryBlue, decoration: TextDecoration.underline)),
                     ),
                   ],
                 )
+
               ],
             ),
           ),

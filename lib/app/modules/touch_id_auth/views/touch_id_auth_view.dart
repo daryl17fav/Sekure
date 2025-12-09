@@ -41,22 +41,35 @@ class TouchIdAuthView extends GetView<TouchIdAuthController> {
                 ),
                 const SizedBox(height: 40),
                 
-                // Fingerprint Icon (Red)
-                // If you have an SVG asset, use flutter_svg. 
-                // Using standard Icon here for simplicity.
+                // Fingerprint Icon (Tappable)
                 GestureDetector(
-                  onTap: () => Get.toNamed(Routes.TOUCH_ID_VERIFY),
+                  onTap: controller.authorizeTouchId,
                   child: Container(
                      padding: const EdgeInsets.all(10),
                      child: const Icon(
                        Icons.fingerprint, 
                        size: 80, 
-                       color: AppColors.textDark // Use textDark (blackish) or primaryRed depending on preference. Image shows black/dark icon.
+                       color: AppColors.textDark,
                      ),
                   ),
                 ),
-                const SizedBox(height: 50),
+                const SizedBox(height: 30),
+                
+                // Skip Button
+                TextButton(
+                  onPressed: controller.skipTouchId,
+                  child: Text(
+                    "Plus tard",
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      color: Colors.grey,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
               ],
+
             ),
           ),
         ],

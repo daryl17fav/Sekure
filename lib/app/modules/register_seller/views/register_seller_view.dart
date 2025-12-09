@@ -42,10 +42,24 @@ class RegisterSellerView extends GetView<RegisterSellerController> {
                           const SizedBox(height: 20),
                           
                           // Form Fields
-                          const CustomTextField(hint: "Nom complet*"),
-                          const CustomTextField(hint: "+ 229  01 XXX XXX XX"),
-                          const CustomTextField(hint: "Adresse mail*"),
-                          const CustomTextField(hint: "Localisation*"),
+                          CustomTextField(
+                            hint: "Nom complet*",
+                            controller: controller.nameController,
+                          ),
+                          CustomTextField(
+                            hint: "+ 229  01 XXX XXX XX",
+                            controller: controller.phoneController,
+                            keyboardType: TextInputType.phone,
+                          ),
+                          CustomTextField(
+                            hint: "Adresse mail*",
+                            controller: controller.emailController,
+                            keyboardType: TextInputType.emailAddress,
+                          ),
+                          CustomTextField(
+                            hint: "Localisation*",
+                            controller: controller.locationController,
+                          ),
                           
                           // File Upload Section
                           Align(
@@ -58,11 +72,11 @@ class RegisterSellerView extends GetView<RegisterSellerController> {
                             child: Row(
                               children: [
                                  InkWell(
-                                   onTap: () {}, // Open file picker
+                                   onTap: controller.pickFile,
                                    child: Container(
                                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                                      decoration: BoxDecoration(
-                                       color: AppColors.buyerBlue, // Using the soft blue/grey from palette
+                                       color: AppColors.buyerBlue,
                                        borderRadius: BorderRadius.circular(8),
                                      ),
                                      child: Text(
@@ -72,19 +86,40 @@ class RegisterSellerView extends GetView<RegisterSellerController> {
                                    ),
                                  ),
                                  const SizedBox(width: 10),
-                                 Text(
-                                   "Aucun fichier sélectionné",
-                                   style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textDark),
+                                 Expanded(
+                                   child: Obx(() => Text(
+                                     controller.selectedFile.value ?? "Aucun fichier sélectionné",
+                                     style: GoogleFonts.poppins(
+                                       fontSize: 12,
+                                       color: controller.selectedFile.value != null ? AppColors.primaryBlue : AppColors.textDark,
+                                       fontWeight: controller.selectedFile.value != null ? FontWeight.w600 : FontWeight.normal,
+                                     ),
+                                     overflow: TextOverflow.ellipsis,
+                                   )),
                                  ),
                               ],
                             ),
                           ),
 
                           // Submit Button
-                          PrimaryButton(
-                            text: "S'inscrire",
-                            onPressed: () => Get.toNamed(Routes.VERIFICATION, arguments: 'seller'),
-                          ),
+                          Obx(() => PrimaryButton(
+                            text: controller.isLoading.value ? "Inscription..." : "S'inscrire",
+                            onPressed: controller.isLoading.value ? null : () {
+                              controller.register();
+                              // After successful registration, navigate with email
+                              Future.delayed(const Duration(milliseconds: 1500), () {
+                                if (!controller.isLoading.value) {
+                                  Get.toNamed(
+                                    Routes.VERIFICATION,
+                                    arguments: {
+                                      'role': 'seller',
+                                      'email': controller.emailController.text,
+                                    },
+                                  );
+                                }
+                              });
+                            },
+                          )),
                           
                           const SizedBox(height: 20),
                           
