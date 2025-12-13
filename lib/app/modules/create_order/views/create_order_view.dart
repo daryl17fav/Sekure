@@ -5,6 +5,7 @@ import '../controllers/create_order_controller.dart';
 import '../../../../widgets/core_widgets.dart';
 import '../../../../widgets/common_widgets.dart';
 import '../../../../utils/colors.dart';
+import '../../../../composants/form_composants.dart';
 
 class CreateOrderView extends GetView<CreateOrderController> {
   const CreateOrderView({super.key});
@@ -16,9 +17,7 @@ class CreateOrderView extends GetView<CreateOrderController> {
       appBar: const SekureAppBar(title: "Nouveau bon de commande"),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+        child: FormContainer(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -33,31 +32,10 @@ class CreateOrderView extends GetView<CreateOrderController> {
               ),
               
               // Vendor Dropdown
-              Obx(() => GestureDetector(
-                onTap: () => _showVendorPicker(context),
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 15),
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  height: 55,
-                  decoration: BoxDecoration(
-                    color: AppColors.inputFill,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        controller.selectedVendor.value ?? "Vendeur*",
-                        style: GoogleFonts.poppins(
-                          color: controller.selectedVendor.value != null
-                              ? Colors.black
-                              : Colors.grey[400],
-                        ),
-                      ),
-                      const Icon(Icons.keyboard_arrow_down, color: AppColors.primaryBlue),
-                    ],
-                  ),
-                ),
+              Obx(() => VendorPickerField(
+                selectedVendor: controller.selectedVendor.value,
+                vendors: controller.vendors,
+                onVendorSelected: controller.selectVendor,
               )),
 
               CustomTextField(
@@ -76,28 +54,9 @@ class CreateOrderView extends GetView<CreateOrderController> {
               ),
 
               // Image Upload
-              GestureDetector(
+              Obx(() => ImageUploadButton(
+                selectedImageName: controller.selectedImage.value,
                 onTap: controller.pickImage,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDDE1EF),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    "Ajouter une image",
-                    style: GoogleFonts.poppins(
-                      color: AppColors.primaryBlue,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 5),
-              Obx(() => Text(
-                controller.selectedImage.value ?? "Aucune image sélectionnée",
-                style: GoogleFonts.poppins(fontSize: 11),
               )),
               
               const SizedBox(height: 50),
@@ -111,42 +70,3 @@ class CreateOrderView extends GetView<CreateOrderController> {
       ),
     );
   }
-
-  /// Show vendor picker bottom sheet
-  void _showVendorPicker(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                "Sélectionner un vendeur",
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 20),
-              ...controller.vendors.map((vendor) {
-                return ListTile(
-                  title: Text(vendor, style: GoogleFonts.poppins()),
-                  onTap: () {
-                    controller.selectVendor(vendor);
-                    Navigator.pop(context);
-                  },
-                );
-              }).toList(),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}

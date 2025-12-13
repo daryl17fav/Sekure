@@ -5,6 +5,7 @@ import '../controllers/register_controller.dart';
 import '../../../../widgets/common_widgets.dart';
 import '../../../../utils/colors.dart';
 import '../../../routes/app_pages.dart';
+import '../../../../composants/form_composants.dart';
 
 class RegisterView extends GetView<RegisterController> {
   const RegisterView({super.key});
@@ -57,33 +58,10 @@ class RegisterView extends GetView<RegisterController> {
                           
                           Align(alignment: Alignment.centerLeft, child: Text("Pièce d'identité*", style: GoogleFonts.poppins(fontWeight: FontWeight.w500))),
                           const SizedBox(height: 5),
-                          Container(
-                            margin: const EdgeInsets.only(bottom: 20),
-                            child: Row(
-                              children: [
-                                 InkWell(
-                                   onTap: controller.pickFile,
-                                   child: Container(
-                                     padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                                     decoration: BoxDecoration(color: AppColors.buyerBlue, borderRadius: BorderRadius.circular(8)),
-                                     child: Text("Ajouter un fichier", style: GoogleFonts.poppins(color: AppColors.primaryBlue, fontSize: 12)),
-                                   ),
-                                 ),
-                                 const SizedBox(width: 10),
-                                 Expanded(
-                                   child: Obx(() => Text(
-                                     controller.selectedFile.value ?? "Aucun fichier sélectionné",
-                                     style: GoogleFonts.poppins(
-                                       fontSize: 12,
-                                       color: controller.selectedFile.value != null ? AppColors.primaryBlue : AppColors.textDark,
-                                       fontWeight: controller.selectedFile.value != null ? FontWeight.w600 : FontWeight.normal,
-                                     ),
-                                     overflow: TextOverflow.ellipsis,
-                                   )),
-                                 ),
-                              ],
-                            ),
-                          ),
+                          Obx(() => FileUploadButton(
+                            selectedFileName: controller.selectedFile.value,
+                            onTap: controller.pickFile,
+                          )),
 
                           Obx(() => PrimaryButton(
                             text: controller.isLoading.value ? "Inscription..." : "S'inscrire",

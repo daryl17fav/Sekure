@@ -5,6 +5,7 @@ import '../controllers/buyer_orders_list_controller.dart';
 import '../../../../widgets/core_widgets.dart'; // Using ItemCard & SekureAppBar
 import '../../../../utils/colors.dart';
 import '../../../routes/app_pages.dart';
+import '../../../../composants/list_composants.dart';
 
 class BuyerOrdersListView extends GetView<BuyerOrdersListController> {
   const BuyerOrdersListView({Key? key}) : super(key: key);
@@ -47,10 +48,10 @@ class BuyerOrdersListView extends GetView<BuyerOrdersListController> {
               children: [
                 ...List.generate(
                   controller.tabs.length,
-                  (index) => _tab(
-                    "${controller.tabs[index]} (${controller.getTabCount(index).toString().padLeft(2, '0')})",
-                    controller.selectedTabIndex.value == index,
-                    () => controller.selectTab(index),
+                  (index) => TabWidget(
+                    text: "${controller.tabs[index]} (${controller.getTabCount(index).toString().padLeft(2, '0')})",
+                    isSelected: controller.selectedTabIndex.value == index,
+                    onTap: () => controller.selectTab(index),
                   ),
                 ),
                 const SizedBox(width: 20), // Extra space at the end to prevent overflow
@@ -92,26 +93,3 @@ class BuyerOrdersListView extends GetView<BuyerOrdersListController> {
       ),
     );
   }
-
-  Widget _tab(String text, bool isSelected, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(right: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFDDE1EF) : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          text,
-          style: GoogleFonts.poppins(
-            color: isSelected ? AppColors.primaryBlue : Colors.grey,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            fontSize: 13
-          ),
-        ),
-      ),
-    );
-  }
-}
