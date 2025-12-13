@@ -1,7 +1,11 @@
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import '../../../services/orders_service.dart';
+
 
 class MyOrdersController extends GetxController {
+  final OrdersService _ordersService = Get.find<OrdersService>();
+  
   // All orders
   final allOrders = <Order>[].obs;
   

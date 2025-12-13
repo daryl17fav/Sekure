@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../routes/app_pages.dart';
+import '../../../services/auth_service.dart';
+
 
 class RegisterSellerController extends GetxController {
+  final AuthService _authService = Get.find<AuthService>();
+  
   // Text controllers
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
@@ -37,7 +42,7 @@ class RegisterSellerController extends GetxController {
   }
 
   // Mock registration function
-  void register() {
+  Future<void> register() async {
     final name = nameController.text.trim();
     final phone = phoneController.text.trim();
     final email = emailController.text.trim();
@@ -138,10 +143,19 @@ class RegisterSellerController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.green,
         colorText: Colors.white,
+        duration: const Duration(seconds: 2),
       );
       
-      // Pass email to verification page for display
-      // Navigation will be handled by the view with email argument
+      // Navigate to verification page
+      Future.delayed(const Duration(milliseconds: 500), () {
+        Get.toNamed(
+          Routes.VERIFICATION,
+          arguments: {
+            'role': 'seller',
+            'email': email,
+          },
+        );
+      });
     });
   }
 

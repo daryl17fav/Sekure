@@ -36,10 +36,24 @@ class RegisterView extends GetView<RegisterController> {
                         children: [
                           Text("Créez votre compte", style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 20),
-                          const CustomTextField(hint: "Nom complet*"),
-                          const CustomTextField(hint: "+ 229  01 XXX XXX XX"),
-                          const CustomTextField(hint: "Adresse mail*"),
-                          const CustomTextField(hint: "Localisation*"),
+                          CustomTextField(
+                            hint: "Nom complet*",
+                            controller: controller.nameController,
+                          ),
+                          CustomTextField(
+                            hint: "+ 229  01 XXX XXX XX",
+                            controller: controller.phoneController,
+                            keyboardType: TextInputType.phone,
+                          ),
+                          CustomTextField(
+                            hint: "Adresse mail*",
+                            controller: controller.emailController,
+                            keyboardType: TextInputType.emailAddress,
+                          ),
+                          CustomTextField(
+                            hint: "Localisation*",
+                            controller: controller.locationController,
+                          ),
                           
                           Align(alignment: Alignment.centerLeft, child: Text("Pièce d'identité*", style: GoogleFonts.poppins(fontWeight: FontWeight.w500))),
                           const SizedBox(height: 5),
@@ -47,18 +61,48 @@ class RegisterView extends GetView<RegisterController> {
                             margin: const EdgeInsets.only(bottom: 20),
                             child: Row(
                               children: [
-                                 Container(
-                                   padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                                   decoration: BoxDecoration(color: AppColors.buyerBlue, borderRadius: BorderRadius.circular(8)),
-                                   child: Text("Ajouter un fichier", style: GoogleFonts.poppins(color: AppColors.primaryBlue, fontSize: 12)),
+                                 InkWell(
+                                   onTap: controller.pickFile,
+                                   child: Container(
+                                     padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                                     decoration: BoxDecoration(color: AppColors.buyerBlue, borderRadius: BorderRadius.circular(8)),
+                                     child: Text("Ajouter un fichier", style: GoogleFonts.poppins(color: AppColors.primaryBlue, fontSize: 12)),
+                                   ),
                                  ),
                                  const SizedBox(width: 10),
-                                 Text("Aucun fichier sélectionné", style: GoogleFonts.poppins(fontSize: 12)),
+                                 Expanded(
+                                   child: Obx(() => Text(
+                                     controller.selectedFile.value ?? "Aucun fichier sélectionné",
+                                     style: GoogleFonts.poppins(
+                                       fontSize: 12,
+                                       color: controller.selectedFile.value != null ? AppColors.primaryBlue : AppColors.textDark,
+                                       fontWeight: controller.selectedFile.value != null ? FontWeight.w600 : FontWeight.normal,
+                                     ),
+                                     overflow: TextOverflow.ellipsis,
+                                   )),
+                                 ),
                               ],
                             ),
                           ),
 
-                          PrimaryButton(text: "S'inscrire", onPressed: () => Get.toNamed(Routes.VERIFICATION, arguments: 'buyer')),
+                          Obx(() => PrimaryButton(
+                            text: controller.isLoading.value ? "Inscription..." : "S'inscrire",
+                            onPressed: controller.isLoading.value ? null : () async {
+                              // Call register and only navigate on success
+                              await controller.register();
+                              // Navigation will be handled after successful API response
+                              // For now, navigate to verification if no errors
+                              if (!controller.isLoading.value) {
+                                Get.toNamed(
+                                  Routes.VERIFICATION,
+                                  arguments: {
+                                    'role': 'buyer',
+                                    'email': controller.emailController.text,
+                                  },
+                                );
+                              }
+                            },
+                          )),
                           const SizedBox(height: 20),
                           // ... Include "Ou avec" and SocialRow and "Connectez-vous" similar to LoginView
                           const SocialLoginRow(),

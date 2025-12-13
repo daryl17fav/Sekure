@@ -36,14 +36,14 @@ class SubmissionsView extends GetView<SubmissionsController> {
               height: 40,
               child: Obx(() => ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: 4, // Tous, En attente, Payés, Expirées
+                itemCount: 4,  
                 itemBuilder: (context, index) {
                   return GestureDetector(
                     onTap: () => controller.selectTab(index),
-                    child: Obx(() => _tab(
+                    child: _tab(
                       controller.getTabLabel(index),
                       controller.selectedTab.value == index,
-                    )),
+                    ),
                   );
                 },
               )),
@@ -53,7 +53,7 @@ class SubmissionsView extends GetView<SubmissionsController> {
             // Filtered List
             Expanded(
               child: Obx(() {
-                if (controller.filteredSubmissions.isEmpty) {
+                if (controller.filteredSubmissions.value.isEmpty) {
                   return Center(
                     child: Text(
                       'Aucune soumission',
@@ -63,9 +63,9 @@ class SubmissionsView extends GetView<SubmissionsController> {
                 }
 
                 return ListView.builder(
-                  itemCount: controller.filteredSubmissions.length,
+                  itemCount: controller.filteredSubmissions.value.length,
                   itemBuilder: (context, index) {
-                    final submission = controller.filteredSubmissions[index];
+                    final submission = controller.filteredSubmissions.value[index];
                     return ItemCard(
                       title: submission.productName,
                       subtitle: submission.buyerName,

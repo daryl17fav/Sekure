@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../services/payments_service.dart';
+
 
 class PaymentController extends GetxController {
+  final PaymentsService _paymentsService = Get.find<PaymentsService>();
+  
   // Selected payment method index
   final selectedPaymentMethod = 0.obs;
   

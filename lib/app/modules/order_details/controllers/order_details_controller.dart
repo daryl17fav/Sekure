@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../services/orders_service.dart';
+
 
 class OrderDetailsController extends GetxController {
+  final OrdersService _ordersService = Get.find<OrdersService>();
+  
   // Order data
   final orderNumber = 'n°165TYFHJG'.obs;
   final productName = "Nom de l'article".obs;
@@ -18,7 +22,7 @@ class OrderDetailsController extends GetxController {
   final deliveryAddress = '22 Rue du Chinks, Malibu, ETAT'.obs;
   
   // Order stages
-  final currentStage = 0.obs; // 0=Créée, 1=Payée, 2=Livraison, 3=Validation, 4=Validation client
+  final currentStage = 0.obs; 
   
   // Loading state
   final isProcessing = false.obs;

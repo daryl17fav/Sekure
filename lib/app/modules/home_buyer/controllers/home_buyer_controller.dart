@@ -1,6 +1,12 @@
 import 'package:get/get.dart';
+import '../../../services/dashboard_service.dart';
+import '../../../services/orders_service.dart';
+
 
 class HomeBuyerController extends GetxController {
+  final DashboardService _dashboardService = Get.find<DashboardService>();
+  final OrdersService _ordersService = Get.find<OrdersService>();
+  
   // User info
   final userName = 'John Evian Sultan'.obs;
   final userAvatar = 'https://i.pravatar.cc/150?img=8'.obs;

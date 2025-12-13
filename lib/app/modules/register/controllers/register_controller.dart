@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../routes/app_pages.dart';
+import '../../../services/auth_service.dart';
 
 class RegisterController extends GetxController {
+  // Services
+  final AuthService _authService = Get.find<AuthService>();
+
   // Text controllers
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
@@ -35,8 +40,8 @@ class RegisterController extends GetxController {
            RegExp(r'^\d{8}$').hasMatch(cleanPhone);
   }
 
-  // Mock registration function
-  void register() {
+  // Registration function
+  Future<void> register() async {
     final name = nameController.text.trim();
     final phone = phoneController.text.trim();
     final email = emailController.text.trim();
@@ -124,23 +129,55 @@ class RegisterController extends GetxController {
       return;
     }
 
-    // Mock registration - always succeed for demo
+    // Call real API
     isLoading.value = true;
     
-    // Simulate API call
-    Future.delayed(const Duration(seconds: 1), () {
+    try {
+      final userData = {
+        'name': name,
+        'phone': phone,
+        'email': email,
+        'location': location,
+        // Note: File upload will need multipart/form-data handling
+        // For now, we'll just send the filename
+        'identityDocument': selectedFile.value,
+      };
+
+      final user = await _authService.register(userData);
+      
       isLoading.value = false;
       
       Get.snackbar(
         'Succès',
-        'Inscription réussie! Vérifiez votre email.',
+        'Inscription réussie! Vérifiez votre email pour le code OTP.',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.green,
         colorText: Colors.white,
+        duration: const Duration(seconds: 2),
       );
       
-      // Navigation will be handled by the view
-    });
+      // Navigate to OTP verification screen
+      Future.delayed(const Duration(milliseconds: 500), () {
+        Get.toNamed(
+          Routes.VERIFICATION,
+          arguments: {
+            'role': 'buyer',
+            'email': email,
+          },
+        );
+      });
+    } catch (e) {
+      isLoading.value = false;
+      
+      Get.snackbar(
+        'Erreur',
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    }
   }
 
   // Mock file picker

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../routes/app_pages.dart';
 
 class CreatePasswordController extends GetxController {
   // Text controllers
@@ -37,7 +38,7 @@ class CreatePasswordController extends GetxController {
   }
 
   // Mock password creation function
-  void createPassword() {
+  Future<void> createPassword() async {
     final password = passwordController.text.trim();
     final confirmPassword = confirmPasswordController.text.trim();
 
@@ -102,9 +103,18 @@ class CreatePasswordController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.green,
         colorText: Colors.white,
+        duration: const Duration(seconds: 2),
       );
       
-      // Navigation will be handled by the view
+      // Navigate to biometric setup based on role
+      Future.delayed(const Duration(milliseconds: 500), () {
+        final String? role = Get.arguments as String?;
+        if (role == 'seller') {
+          Get.toNamed(Routes.TOUCH_ID_AUTH);
+        } else {
+          Get.toNamed(Routes.FACE_ID);
+        }
+      });
     });
   }
 }

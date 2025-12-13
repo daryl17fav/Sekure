@@ -12,8 +12,11 @@ class OrderDetailsView extends GetView<OrderDetailsController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: SekureAppBar(
-        title: "Commande ${controller.orderNumber.value}",
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: Obx(() => SekureAppBar(
+          title: "Commande ${controller.orderNumber.value}",
+        )),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),

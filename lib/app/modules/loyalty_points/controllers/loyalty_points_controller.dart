@@ -1,6 +1,10 @@
 import 'package:get/get.dart';
+import '../../../services/loyalty_service.dart';
+
 
 class LoyaltyPointsController extends GetxController {
+  final LoyaltyService _loyaltyService = Get.find<LoyaltyService>();
+  
   // User points
   final totalPoints = 350.obs;
   

@@ -2,13 +2,17 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../routes/app_pages.dart';
+import '../../../services/biometric_service.dart';
 
 class TouchIdVerifyController extends GetxController {
+  final BiometricService _biometricService = BiometricService();
+  
   // Observable states
   final isScanning = false.obs;
   final scanSuccess = false.obs;
   final scanFailed = false.obs;
   final scanMessage = ''.obs;
+  final errorMessage = ''.obs;
 
   @override
   void onInit() {
@@ -20,23 +24,24 @@ class TouchIdVerifyController extends GetxController {
   }
 
   /// Start biometric scan
-  void startScan() {
+  Future<void> startScan() async {
     isScanning.value = true;
     scanSuccess.value = false;
     scanFailed.value = false;
-    scanMessage.value = 'Scanning...';
+    scanMessage.value = 'Authentification en cours...';
+    errorMessage.value = '';
 
-    // Simulate biometric scan (2 seconds)
-    Future.delayed(const Duration(seconds: 2), () {
-      // Mock: 80% success rate
-      final success = DateTime.now().second % 5 != 0; // Fail every 5th attempt for demo
-      
-      if (success) {
-        handleSuccess();
-      } else {
-        handleFailure();
-      }
-    });
+    // Perform biometric authentication
+    final result = await _biometricService.authenticate(
+      localizedReason: 'Veuillez vous authentifier pour continuer',
+      biometricOnly: true,
+    );
+
+    if (result.success) {
+      handleSuccess();
+    } else {
+      handleFailure(result.errorMessage ?? 'Authentification échouée');
+    }
   }
 
   /// Handle successful scan
@@ -47,7 +52,7 @@ class TouchIdVerifyController extends GetxController {
 
     Get.snackbar(
       'Succès',
-      'Touch ID vérifié avec succès!',
+      'Authentification biométrique réussie!',
       snackPosition: SnackPosition.BOTTOM,
       backgroundColor: Colors.green,
       colorText: Colors.white,
@@ -55,33 +60,26 @@ class TouchIdVerifyController extends GetxController {
     );
 
     // Navigate to home after short delay
-    Future.delayed(const Duration(seconds: 2), () {
-      // TODO: Navigate based on user role
-      Get.offAllNamed(Routes.HOME); // or Routes.HOME_BUYER
+    Future.delayed(const Duration(seconds: 1), () {
+      Get.offAllNamed(Routes.HOME); // or Routes.HOME_BUYER based on user role
     });
   }
 
   /// Handle failed scan
-  void handleFailure() {
+  void handleFailure(String message) {
     isScanning.value = false;
     scanFailed.value = true;
     scanMessage.value = 'Échec de l\'authentification';
+    errorMessage.value = message;
 
     Get.snackbar(
       'Erreur',
-      'Touch ID non reconnu. Veuillez réessayer.',
+      message,
       snackPosition: SnackPosition.BOTTOM,
       backgroundColor: Colors.red,
       colorText: Colors.white,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 3),
     );
-
-    // Auto-retry after 2 seconds
-    Future.delayed(const Duration(seconds: 2), () {
-      if (!scanSuccess.value) {
-        startScan();
-      }
-    });
   }
 
   /// Manual retry

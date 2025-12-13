@@ -81,20 +81,20 @@ class SubmissionsController extends GetxController {
   void filterSubmissions() {
     switch (selectedTab.value) {
       case 0: // Tous
-        filteredSubmissions.value = allSubmissions;
+        filteredSubmissions.value = allSubmissions.value;
         break;
       case 1: // En attente
-        filteredSubmissions.value = allSubmissions
+        filteredSubmissions.value = allSubmissions.value
             .where((s) => s.status == SubmissionStatus.pending)
             .toList();
         break;
       case 2: // Payés
-        filteredSubmissions.value = allSubmissions
+        filteredSubmissions.value = allSubmissions.value
             .where((s) => s.status == SubmissionStatus.paid)
             .toList();
         break;
       case 3: // Expirées
-        filteredSubmissions.value = allSubmissions
+        filteredSubmissions.value = allSubmissions.value
             .where((s) => s.status == SubmissionStatus.expired)
             .toList();
         break;
@@ -112,16 +112,16 @@ class SubmissionsController extends GetxController {
     int count;
     switch (index) {
       case 0:
-        count = allSubmissions.length;
+        count = allSubmissions.value.length;
         return 'Tous ($count)';
       case 1:
-        count = allSubmissions.where((s) => s.status == SubmissionStatus.pending).length;
+        count = allSubmissions.value.where((s) => s.status == SubmissionStatus.pending).length;
         return 'En attente ($count)';
       case 2:
-        count = allSubmissions.where((s) => s.status == SubmissionStatus.paid).length;
+        count = allSubmissions.value.where((s) => s.status == SubmissionStatus.paid).length;
         return 'Payés ($count)';
       case 3:
-        count = allSubmissions.where((s) => s.status == SubmissionStatus.expired).length;
+        count = allSubmissions.value.where((s) => s.status == SubmissionStatus.expired).length;
         return 'Expirées ($count)';
       default:
         return '';

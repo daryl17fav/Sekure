@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../services/orders_service.dart';
+
 
 class BuyerOrderDetailsController extends GetxController {
+  final OrdersService _ordersService = Get.find<OrdersService>();
+  
   // Order details
   final orderNumber = 'n°165TYFHJG'.obs;
   final productName = "Nom de l'article".obs;

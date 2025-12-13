@@ -60,23 +60,11 @@ class CreatePasswordView extends GetView<CreatePasswordController> {
                   const SizedBox(height: 10),
                   Obx(() => PrimaryButton(
                     text: controller.isLoading.value ? "Sécurisation..." : "Sécuriser",
-                    onPressed: controller.isLoading.value ? null : () {
-                      controller.createPassword();
-                      // After successful password creation, navigate
-                      Future.delayed(const Duration(milliseconds: 1500), () {
-                        if (!controller.isLoading.value) {
-                          // Get the role from arguments
-                          final String? role = Get.arguments as String?;
-                          
-                          // Navigate based on role
-                          if (role == 'seller') {
-                            Get.toNamed(Routes.TOUCH_ID_AUTH);
-                          } else {
-                            // Default to Face ID for buyers
-                            Get.toNamed(Routes.FACE_ID);
-                          }
-                        }
-                      });
+                    onPressed: controller.isLoading.value ? null : () async {
+                      // Call createPassword - it will handle validation
+                      await controller.createPassword();
+                      // Only navigate if password creation was successful
+                      // The controller will show error snackbars if validation fails
                     },
                   )),
                 ],

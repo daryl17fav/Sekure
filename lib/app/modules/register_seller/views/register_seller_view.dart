@@ -104,20 +104,11 @@ class RegisterSellerView extends GetView<RegisterSellerController> {
                           // Submit Button
                           Obx(() => PrimaryButton(
                             text: controller.isLoading.value ? "Inscription..." : "S'inscrire",
-                            onPressed: controller.isLoading.value ? null : () {
-                              controller.register();
-                              // After successful registration, navigate with email
-                              Future.delayed(const Duration(milliseconds: 1500), () {
-                                if (!controller.isLoading.value) {
-                                  Get.toNamed(
-                                    Routes.VERIFICATION,
-                                    arguments: {
-                                      'role': 'seller',
-                                      'email': controller.emailController.text,
-                                    },
-                                  );
-                                }
-                              });
+                            onPressed: controller.isLoading.value ? null : () async {
+                              // Call register - it will handle validation
+                              await controller.register();
+                              // Only navigate if registration was successful (loading finished without errors)
+                              // The controller will show error snackbars if validation fails
                             },
                           )),
                           

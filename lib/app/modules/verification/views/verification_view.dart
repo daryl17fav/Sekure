@@ -74,13 +74,11 @@ class VerificationView extends GetView<VerificationController> {
                 const SizedBox(height: 20),
                 Obx(() => PrimaryButton(
                   text: controller.isVerifying.value ? "Vérification..." : "Vérifier",
-                  onPressed: controller.isVerifying.value ? null : () {
-                    controller.verifyOTP();
-                    // After successful verification, navigate
-                    Future.delayed(const Duration(milliseconds: 1500), () {
-                      final String? role = Get.arguments is Map ? Get.arguments['role'] : Get.arguments as String?;
-                      Get.toNamed(Routes.CREATE_PASSWORD, arguments: role);
-                    });
+                  onPressed: controller.isVerifying.value ? null : () async {
+                    // Call verifyOTP - it will handle validation
+                    await controller.verifyOTP();
+                    // Only navigate if OTP verification was successful
+                    // The controller will show error snackbars if validation fails
                   },
                 )),
               ],

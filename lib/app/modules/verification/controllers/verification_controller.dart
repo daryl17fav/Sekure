@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../routes/app_pages.dart';
 
 class VerificationController extends GetxController {
   // OTP Text Controllers (5 digits)
@@ -170,7 +171,7 @@ class VerificationController extends GetxController {
   }
 
   /// Verify OTP code
-  void verifyOTP() {
+  Future<void> verifyOTP() async {
     final code = getOTPCode();
 
     // Validate OTP length
@@ -210,9 +211,14 @@ class VerificationController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.green,
         colorText: Colors.white,
+        duration: const Duration(seconds: 2),
       );
 
-      // Navigation will be handled by the view
+      // Navigate to password creation
+      Future.delayed(const Duration(milliseconds: 500), () {
+        final String? role = Get.arguments is Map ? Get.arguments['role'] : Get.arguments as String?;
+        Get.toNamed(Routes.CREATE_PASSWORD, arguments: role);
+      });
     });
   }
 

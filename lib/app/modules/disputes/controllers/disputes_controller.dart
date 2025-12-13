@@ -1,6 +1,10 @@
 import 'package:get/get.dart';
+import '../../../services/disputes_service.dart';
+
 
 class DisputesController extends GetxController {
+  final DisputesService _disputesService = Get.find<DisputesService>();
+  
   // Selected tab index
   final selectedTab = 0.obs;
   

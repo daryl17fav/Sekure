@@ -1,6 +1,10 @@
 import 'package:get/get.dart';
+import '../../../services/orders_service.dart';
+
 
 class BuyerOrdersListController extends GetxController {
+  final OrdersService _ordersService = Get.find<OrdersService>();
+  
   // Selected tab index
   final selectedTabIndex = 0.obs;
   
