@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../controllers/loyalty_points_controller.dart';
-import '../../../../widgets/core_widgets.dart';
 import '../../../../utils/colors.dart';
 
 class LoyaltyPointsView extends GetView<LoyaltyPointsController> {

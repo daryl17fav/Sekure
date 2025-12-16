@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../controllers/register_controller.dart';
 import '../../../../widgets/common_widgets.dart';
-import '../../../../utils/colors.dart';
 import '../../../routes/app_pages.dart';
 import '../../../../composants/form_composants.dart';
 

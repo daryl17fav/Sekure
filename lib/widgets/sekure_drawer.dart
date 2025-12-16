@@ -35,7 +35,7 @@ class SekureDrawer extends StatelessWidget {
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Column(
@@ -55,7 +55,7 @@ class SekureDrawer extends StatelessWidget {
               height: 50,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryRed.withOpacity(0.8),
+                  backgroundColor: AppColors.primaryRed.withValues(alpha: 0.8),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
                 icon: const Icon(Icons.logout, color: Colors.white),

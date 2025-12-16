@@ -59,6 +59,8 @@ import '../modules/verification/views/verification_view.dart';
 
 part '../navigation/app_routes.dart';
 
+// ignore_for_file: constant_identifier_names
+
 class AppPages {
   AppPages._();
 

@@ -99,7 +99,7 @@ class MyOrdersView extends GetView<MyOrdersController> {
                     subtitle: order.clientName,
                     price: order.formattedPrice,
                   );
-                }).toList(),
+                }),
                 
                 const SizedBox(height: 10),
               ],

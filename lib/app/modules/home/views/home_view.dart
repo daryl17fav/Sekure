@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../controllers/home_controller.dart';
 import '../../../../widgets/core_widgets.dart'; // Import core widgets
@@ -75,7 +74,7 @@ class HomeView extends GetView<HomeController> {
                       price: transaction.formattedAmount,
                       isNegative: transaction.isNegative,
                     );
-                  }).toList(),
+                  }),
                 ],
               )),
             ],

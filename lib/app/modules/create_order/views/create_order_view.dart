@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../controllers/create_order_controller.dart';
 import '../../../../widgets/core_widgets.dart';
 import '../../../../widgets/common_widgets.dart';

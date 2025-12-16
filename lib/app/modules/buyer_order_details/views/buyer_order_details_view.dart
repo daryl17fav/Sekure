@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../controllers/buyer_order_details_controller.dart';
-import '../../../../widgets/core_widgets.dart';
 import '../../../../utils/colors.dart';
 import '../../../routes/app_pages.dart';
 

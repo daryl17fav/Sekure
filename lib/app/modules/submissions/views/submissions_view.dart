@@ -87,7 +87,7 @@ class SubmissionsView extends GetView<SubmissionsController> {
       margin: const EdgeInsets.only(right: 10),
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
       decoration: BoxDecoration(
-        color: isSelected ? AppColors.primaryBlue.withOpacity(0.1) : Colors.transparent,
+        color: isSelected ? AppColors.primaryBlue.withValues(alpha: 0.1) : Colors.transparent,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Center(

@@ -5,6 +5,9 @@ import '../../../services/orders_service.dart';
 class BuyerOrdersListController extends GetxController {
   final OrdersService _ordersService = Get.find<OrdersService>();
   
+  // Loading state
+  final isLoading = false.obs;
+  
   // Selected tab index
   final selectedTabIndex = 0.obs;
   
@@ -32,6 +35,15 @@ class BuyerOrdersListController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    loadOrders();
+  }
+  
+  /// Load orders with simulated delay
+  Future<void> loadOrders() async {
+    isLoading.value = true;
+    // Simulate network delay
+    await Future.delayed(const Duration(seconds: 1));
+    isLoading.value = false;
   }
 
   @override

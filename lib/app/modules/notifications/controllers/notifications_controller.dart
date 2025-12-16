@@ -1,6 +1,9 @@
 import 'package:get/get.dart';
 
 class NotificationsController extends GetxController {
+  // Loading state
+  final isLoading = false.obs;
+  
   // Grouped notifications
   final groupedNotifications = <String, List<NotificationItem>>{}.obs;
 
@@ -11,7 +14,12 @@ class NotificationsController extends GetxController {
   }
 
   /// Load mock notifications
-  void loadNotifications() {
+  Future<void> loadNotifications() async {
+    isLoading.value = true;
+    
+    // Simulate network delay
+    await Future.delayed(const Duration(seconds: 1));
+    
     groupedNotifications.value = {
       'Aujourd\'hui': [
         NotificationItem(
@@ -55,6 +63,8 @@ class NotificationsController extends GetxController {
         ),
       ],
     };
+    
+    isLoading.value = false;
   }
 
   /// Handle notification action

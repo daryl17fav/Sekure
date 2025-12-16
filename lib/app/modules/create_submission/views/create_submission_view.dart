@@ -143,7 +143,7 @@ class CreateSubmissionView extends GetView<CreateSubmissionController> {
                     Navigator.pop(context);
                   },
                 );
-              }).toList(),
+              }),
             ],
           ),
         );

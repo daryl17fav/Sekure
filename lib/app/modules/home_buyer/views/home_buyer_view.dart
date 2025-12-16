@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../controllers/home_buyer_controller.dart';
 import '../../../../widgets/core_widgets.dart';  
@@ -59,7 +58,7 @@ class HomeBuyerView extends GetView<HomeBuyerController> {
                   LineChartBarData(
                     spots: [const FlSpot(0, 5), const FlSpot(1, 2), const FlSpot(2, 4), const FlSpot(3, 3), const FlSpot(4, 5), const FlSpot(5, 2)],
                     isCurved: true,
-                    color: AppColors.primaryRed.withOpacity(0.5),
+                    color: AppColors.primaryRed.withValues(alpha: 0.5),
                     barWidth: 1,
                     dotData: FlDotData(show: false),
                   ),

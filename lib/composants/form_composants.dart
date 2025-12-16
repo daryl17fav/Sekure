@@ -187,7 +187,7 @@ class VendorPickerField extends StatelessWidget {
                     Navigator.pop(context);
                   },
                 );
-              }).toList(),
+              }),
             ],
           ),
         );

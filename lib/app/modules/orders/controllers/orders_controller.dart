@@ -5,6 +5,9 @@ import '../../../services/orders_service.dart';
 class OrdersController extends GetxController {
   final OrdersService _ordersService = Get.find<OrdersService>();
   
+  // Loading state
+  final isLoading = false.obs;
+  
   // Selected tab index
   final selectedTab = 0.obs;
   
@@ -21,7 +24,12 @@ class OrdersController extends GetxController {
   }
 
   /// Load mock orders
-  void loadMockOrders() {
+  Future<void> loadMockOrders() async {
+    isLoading.value = true;
+    
+    // Simulate network delay
+    await Future.delayed(const Duration(seconds: 1));
+    
     allOrders.value = [
       OrderCommand(
         id: '1',
@@ -67,6 +75,7 @@ class OrdersController extends GetxController {
     
     // Initially show all
     filterOrders();
+    isLoading.value = false;
   }
 
   /// Filter orders based on selected tab

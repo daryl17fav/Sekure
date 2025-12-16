@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../controllers/orders_controller.dart';
-import '../../../../widgets/core_widgets.dart'; // For AppBar
+import '../../../../widgets/core_widgets.dart';
 import '../../../../utils/colors.dart';
 import '../../../routes/app_pages.dart';
 import '../../../../composants/list_composants.dart';
@@ -28,7 +28,7 @@ class OrdersView extends GetView<OrdersController> {
                   text: controller.getTabLabel(index),
                   isSelected: controller.selectedTab.value == index,
                   onTap: () => controller.selectTab(index),
-                  selectedColor: AppColors.primaryBlue.withOpacity(0.1),
+                  selectedColor: AppColors.primaryBlue.withValues(alpha: 0.1),
                   unselectedColor: Colors.white,
                 ));
               }),
@@ -39,6 +39,10 @@ class OrdersView extends GetView<OrdersController> {
           // Grid Content
           Expanded(
             child: Obx(() {
+              if (controller.isLoading.value) {
+                return const GridShimmerLoader(itemCount: 6, childAspectRatio: 0.75);
+              }
+              
               if (controller.filteredOrders.isEmpty) {
                 return Center(
                   child: Text(

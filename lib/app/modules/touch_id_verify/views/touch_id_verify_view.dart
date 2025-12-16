@@ -39,16 +39,16 @@ class TouchIdVerifyView extends GetView<TouchIdVerifyController> {
               height: 180,
               decoration: BoxDecoration(
                 color: controller.scanSuccess.value 
-                  ? Colors.green.withOpacity(0.1)
+                  ? Colors.green.withValues(alpha: 0.1)
                   : controller.scanFailed.value
-                    ? Colors.red.withOpacity(0.1)
+                    ? Colors.red.withValues(alpha: 0.1)
                     : const Color(0xFFE8EAF1),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
                     color: controller.isScanning.value 
-                      ? Colors.blue.withOpacity(0.3)
-                      : Colors.black.withOpacity(0.05),
+                      ? Colors.blue.withValues(alpha: 0.3)
+                      : Colors.black.withValues(alpha: 0.05),
                     blurRadius: controller.isScanning.value ? 30 : 20,
                     offset: const Offset(0, 10),
                   )

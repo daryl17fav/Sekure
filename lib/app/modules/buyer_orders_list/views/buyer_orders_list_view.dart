@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../controllers/buyer_orders_list_controller.dart';
-import '../../../../widgets/core_widgets.dart'; // Using ItemCard & SekureAppBar
+import '../../../../widgets/core_widgets.dart';
 import '../../../../utils/colors.dart';
 import '../../../routes/app_pages.dart';
 import '../../../../composants/list_composants.dart';
@@ -63,6 +63,10 @@ class BuyerOrdersListView extends GetView<BuyerOrdersListController> {
           // List
           Expanded(
             child: Obx(() {
+              if (controller.isLoading.value) {
+                return const ListShimmerLoader(itemCount: 5, itemHeight: 100);
+              }
+              
               final orders = controller.filteredOrders;
               
               if (orders.isEmpty) {

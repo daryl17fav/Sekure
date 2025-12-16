@@ -5,6 +5,9 @@ import '../../../services/disputes_service.dart';
 class DisputesController extends GetxController {
   final DisputesService _disputesService = Get.find<DisputesService>();
   
+  // Loading state
+  final isLoading = false.obs;
+  
   // Selected tab index
   final selectedTab = 0.obs;
   
@@ -21,7 +24,12 @@ class DisputesController extends GetxController {
   }
 
   /// Load mock disputes
-  void loadMockDisputes() {
+  Future<void> loadMockDisputes() async {
+    isLoading.value = true;
+    
+    // Simulate network delay
+    await Future.delayed(const Duration(seconds: 1));
+    
     allDisputes.value = [
       Dispute(
         id: '1',
@@ -66,6 +74,7 @@ class DisputesController extends GetxController {
     ];
     
     filterDisputes();
+    isLoading.value = false;
   }
 
   /// Filter disputes based on selected tab
