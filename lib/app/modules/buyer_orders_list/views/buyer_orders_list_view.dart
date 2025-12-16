@@ -97,3 +97,4 @@ class BuyerOrdersListView extends GetView<BuyerOrdersListController> {
       ),
     );
   }
+}
