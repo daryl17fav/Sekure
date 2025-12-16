@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../controllers/role_selection_controller.dart';
 import '../../../../widgets/common_widgets.dart';
 import '../../../../utils/colors.dart';
-import '../../../routes/app_pages.dart';
+
 
 class RoleSelectionView extends GetView<RoleSelectionController> {
   const RoleSelectionView({super.key});

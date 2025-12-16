@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../controllers/verification_controller.dart';
 import '../../../../widgets/common_widgets.dart';
 import '../../../../utils/colors.dart';
-import '../../../routes/app_pages.dart';
+
 
 class VerificationView extends GetView<VerificationController> {
   const VerificationView({super.key});

@@ -69,3 +69,4 @@ class CreateOrderView extends GetView<CreateOrderController> {
       ),
     );
   }
+}

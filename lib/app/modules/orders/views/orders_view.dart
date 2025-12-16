@@ -77,7 +77,6 @@ class OrdersView extends GetView<OrdersController> {
                       statusIcon = Icons.cancel;
                       break;
                     case OrderStatus.pending:
-                    default:
                       statusColor = AppColors.pendingOrange;
                       statusIcon = Icons.access_time_filled;
                       break;
@@ -100,3 +99,4 @@ class OrdersView extends GetView<OrdersController> {
       ),
     );
   }
+}
