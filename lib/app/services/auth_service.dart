@@ -69,18 +69,22 @@ class AuthService extends GetxService {
   /// Register a new user
   Future<User> register(Map<String, dynamic> userData) async {
     try {
+      print('BACKEND_RESPONSE: Sending registration data: $userData');
       final response = await _apiService.post(
         ApiConfig.register,
         userData,
       );
+      print('BACKEND_RESPONSE: Raw Response: $response');
 
       // Check if registration requires OTP verification
       if (response['requiresVerification'] == true || 
           response['message']?.toString().toLowerCase().contains('verify') == true) {
+        print('BACKEND_RESPONSE: Verification trigger detected');
         // Return a temporary user object for OTP flow
         final tempUser = User.fromJson(response['user'] ?? userData);
         return tempUser;
       }
+      print('BACKEND_RESPONSE: No verification trigger found in response');
 
       // If no verification needed, handle like login
       final token = response['token'] ?? response['accessToken'];

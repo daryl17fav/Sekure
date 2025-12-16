@@ -96,7 +96,12 @@ class LoginController extends GetxController {
     isLoading.value = true;
     
     try {
-      final user = await _authService.login(email, password);
+      final user = await _authService.login(email, password).timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          throw 'Le serveur ne répond pas. Veuillez réessayer.';
+        },
+      );
       
       isLoading.value = false;
       
