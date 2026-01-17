@@ -13,11 +13,13 @@ class RegisterSellerController extends GetxController {
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
   final emailController = TextEditingController();
+  final passwordController = TextEditingController();
   final locationController = TextEditingController();
   
   // Observable for file selection
   final selectedFile = Rxn<String>();
   final isLoading = false.obs;
+  final isPasswordVisible = false.obs;
 
 
   @override
@@ -25,8 +27,13 @@ class RegisterSellerController extends GetxController {
     nameController.dispose();
     phoneController.dispose();
     emailController.dispose();
+    passwordController.dispose();
     locationController.dispose();
     super.onClose();
+  }
+  
+  void togglePasswordVisibility() {
+    isPasswordVisible.value = !isPasswordVisible.value;
   }
 
   // Email validation
@@ -43,11 +50,11 @@ class RegisterSellerController extends GetxController {
            RegExp(r'^\d{8}$').hasMatch(cleanPhone);
   }
 
-  // Mock registration function
-  Future<void> register() async {
+    Future<void> register() async {
     final name = nameController.text.trim();
     final phone = phoneController.text.trim();
     final email = emailController.text.trim();
+    final password = passwordController.text.trim();
     final location = locationController.text.trim();
 
     // Validate name
@@ -107,6 +114,18 @@ class RegisterSellerController extends GetxController {
       );
       return;
     }
+    
+    // Validate password
+    if (password.isEmpty || password.length < 6) {
+      Get.snackbar(
+        'Erreur',
+        'Le mot de passe doit contenir au moins 6 caractères',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
 
     // Validate location
     if (location.isEmpty) {
@@ -132,12 +151,23 @@ class RegisterSellerController extends GetxController {
       return;
     }
 
-    // Mock registration - always succeed for demo
+    // Real registration
+    if (isLoading.value) return; // Prevent rage taps
     isLoading.value = true;
     
-    // Simulate API call
-    Future.delayed(const Duration(seconds: 1), () {
-      isLoading.value = false;
+    try {
+      // Prepare data
+      final sellerData = {
+        'name': name,
+        'phone': phone,
+        'email': email,
+        'password': password, // Sending real password
+        'location': location,
+        'role': 'seller',
+        'idCardImage': selectedFile.value, 
+      };
+
+      await _authService.registerSeller(sellerData);
       
       Get.snackbar(
         'Succès',
@@ -149,16 +179,47 @@ class RegisterSellerController extends GetxController {
       );
       
       // Navigate to verification page
-      Future.delayed(const Duration(milliseconds: 500), () {
-        Get.toNamed(
-          Routes.VERIFICATION,
-          arguments: {
-            'role': 'seller',
-            'email': email,
-          },
+      // Navigate to verification page
+      Get.toNamed(
+        Routes.VERIFICATION,
+        arguments: {
+          'role': 'seller',
+          'email': email,
+        },
+      );
+    } catch (e) {
+      // Handle "Email already registered" (409) specifically
+      if (e.toString().contains('Email already registered') || e.toString().contains('Conflict')) {
+         Get.snackbar(
+          'Compte existant',
+          'Cet email est déjà enregistré. Veuillez vous connecter.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          mainButton: TextButton(
+            onPressed: () => Get.offNamed(Routes.LOGIN),
+            child: const Text('Se connecter', style: TextStyle(color: Colors.white)),
+          ),
+          duration: const Duration(seconds: 5),
         );
-      });
-    });
+        _authService.forceClearAuth();
+      } else {
+        Get.snackbar(
+          'Erreur',
+          'Échec de l\'inscription: $e',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+      
+      // If it's a rate limit error, we also clear state
+      if (e.toString().contains('Too many')) {
+         _authService.forceClearAuth();
+      }
+    } finally {
+      isLoading.value = false;
+    }
   }
 
 

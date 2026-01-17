@@ -34,10 +34,9 @@ class SubmissionsView extends GetView<SubmissionsController> {
             // Scrollable Tabs
             SizedBox(
               height: 40,
-              child: Obx(() => ListView.builder(
+              child: Obx(() => ListView(
                 scrollDirection: Axis.horizontal,
-                itemCount: 4,  
-                itemBuilder: (context, index) {
+                children: List.generate(4, (index) {
                   return GestureDetector(
                     onTap: () => controller.selectTab(index),
                     child: _tab(
@@ -45,7 +44,7 @@ class SubmissionsView extends GetView<SubmissionsController> {
                       controller.selectedTab.value == index,
                     ),
                   );
-                },
+                }),
               )),
             ),
             const SizedBox(height: 20),

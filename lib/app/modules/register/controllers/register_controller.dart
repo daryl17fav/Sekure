@@ -132,6 +132,7 @@ class RegisterController extends GetxController {
     }
 
     // Call real API
+    if (isLoading.value) return; // Prevent rage taps
     isLoading.value = true;
     
     try {
@@ -159,62 +160,88 @@ class RegisterController extends GetxController {
       );
       
       // Navigate to OTP verification screen
-      Future.delayed(const Duration(milliseconds: 500), () {
-        Get.toNamed(
-          Routes.VERIFICATION,
-          arguments: {
-            'role': 'buyer',
-            'email': email,
-          },
-        );
-      });
+      Get.toNamed(
+        Routes.VERIFICATION,
+        arguments: {
+          'role': 'buyer',
+          'email': email,
+        },
+      );
     } catch (e) {
       isLoading.value = false;
       
-      Get.snackbar(
-        'Erreur',
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-      );
+      // Handle "Email already registered" (409) specifically
+      if (e.toString().contains('Email already registered') || e.toString().contains('Conflict')) {
+         Get.snackbar(
+          'Compte existant',
+          'Cet email est déjà enregistré. Veuillez vous connecter.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          mainButton: TextButton(
+            onPressed: () => Get.offNamed(Routes.LOGIN),
+            child: const Text('Se connecter', style: TextStyle(color: Colors.white)),
+          ),
+          duration: const Duration(seconds: 5),
+        );
+        // Clean state just in case
+        _authService.forceClearAuth();
+      } else {
+        // General error
+        Get.snackbar(
+          'Erreur',
+          e.toString(),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+      }
+
+      // If it's a rate limit error, we also clear state to be safe as requested
+      if (e.toString().contains('Too many')) {
+         _authService.forceClearAuth();
+      }
     }
   }
 
   // Real file picker
   Future<void> pickFile() async {
-    Get.bottomSheet(
-      Container(
-        padding: const EdgeInsets.all(20),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              "Sélectionner une source",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildSourceOption(
-                  icon: Icons.camera_alt,
-                  label: "Caméra",
-                  onTap: () => _pickImage(ImageSource.camera),
-                ),
-                _buildSourceOption(
-                  icon: Icons.photo_library,
-                  label: "Galerie",
-                  onTap: () => _pickImage(ImageSource.gallery),
-                ),
-              ],
-            ),
-          ],
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Sélectionner une source",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildSourceOption(
+                    icon: Icons.camera_alt,
+                    label: "Caméra",
+                    onTap: () => _pickImage(ImageSource.camera),
+                  ),
+                  _buildSourceOption(
+                    icon: Icons.photo_library,
+                    label: "Galerie",
+                    onTap: () => _pickImage(ImageSource.gallery),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              TextButton(
+                onPressed: () => Get.back(),
+                child: const Text("Annuler", style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
         ),
       ),
     );

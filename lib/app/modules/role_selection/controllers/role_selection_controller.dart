@@ -12,7 +12,8 @@ class RoleSelectionController extends GetxController {
     // Optional: Log analytics event
     // Analytics.logEvent('role_selected', parameters: {'role': 'seller'});
     
-    Get.toNamed(Routes.REGISTER_SELLER);
+    // Pass existing arguments (like social user data) to the next screen
+    Get.toNamed(Routes.REGISTER_SELLER, arguments: Get.arguments);
   }
 
   /// Navigate to buyer registration
@@ -22,7 +23,8 @@ class RoleSelectionController extends GetxController {
     // Optional: Log analytics event
     // Analytics.logEvent('role_selected', parameters: {'role': 'buyer'});
     
-    Get.toNamed(Routes.REGISTER);
+    // Pass existing arguments (like social user data) to the next screen
+    Get.toNamed(Routes.REGISTER, arguments: Get.arguments);
   }
 
   /// Navigate back to login

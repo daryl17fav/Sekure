@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import '../../../services/submissions_service.dart';
 
 class SubmissionsController extends GetxController {
    final selectedTab = 0.obs;
@@ -7,74 +8,43 @@ class SubmissionsController extends GetxController {
   
    final filteredSubmissions = <Submission>[].obs;
 
+  final SubmissionsService _submissionsService = Get.put(SubmissionsService());
+
   @override
   void onInit() {
     super.onInit();
-    loadMockSubmissions();
+    fetchSubmissions();
   }
 
-   void loadMockSubmissions() {
-    allSubmissions.value = [
-      Submission(
-        id: '1',
-        productName: "Nom de l'article",
-        buyerName: 'M. Martins AZEMIN',
-        price: 12000,
-        status: SubmissionStatus.pending,
-        image: 'https://i.pravatar.cc/150?img=20',
-      ),
-      Submission(
-        id: '2',
-        productName: "Nom de l'article",
-        buyerName: 'M. Martins AZEMIN',
-        price: 12000,
-        status: SubmissionStatus.pending,
-        image: 'https://i.pravatar.cc/150?img=21',
-      ),
-      Submission(
-        id: '3',
-        productName: "Nom de l'article",
-        buyerName: 'M. Martins AZEMIN',
-        price: 12000,
-        status: SubmissionStatus.pending,
-        image: 'https://i.pravatar.cc/150?img=22',
-      ),
-      Submission(
-        id: '4',
-        productName: "Nom de l'article",
-        buyerName: 'M. Martins AZEMIN',
-        price: 12000,
-        status: SubmissionStatus.paid,
-        image: 'https://i.pravatar.cc/150?img=23',
-      ),
-      Submission(
-        id: '5',
-        productName: "Nom de l'article",
-        buyerName: 'M. Martins AZEMIN',
-        price: 12000,
-        status: SubmissionStatus.paid,
-        image: 'https://i.pravatar.cc/150?img=24',
-      ),
-      Submission(
-        id: '6',
-        productName: "Nom de l'article",
-        buyerName: 'M. Martins AZEMIN',
-        price: 12000,
-        status: SubmissionStatus.expired,
-        image: 'https://i.pravatar.cc/150?img=25',
-      ),
-      Submission(
-        id: '7',
-        productName: "Nom de l'article",
-        buyerName: 'M. Martins AZEMIN',
-        price: 12000,
-        status: SubmissionStatus.expired,
-        image: 'https://i.pravatar.cc/150?img=26',
-      ),
-    ];
-    
-    // Initially show all
-    filterSubmissions();
+   Future<void> fetchSubmissions() async {
+    try {
+      final data = await _submissionsService.getSubmissions();
+      allSubmissions.value = data.map((item) => Submission(
+        id: item['id']?.toString() ?? '',
+        productName: item['productName'] ?? 'Inconnu',
+        buyerName: item['buyerName'] ?? 'Inconnu',
+        price: int.tryParse(item['price']?.toString() ?? '0') ?? 0,
+        status: _parseStatus(item['status']),
+        image: item['image'] ?? '',
+      )).toList();
+      
+      // Initially show all
+      filterSubmissions();
+    } catch (e) {
+      print("Error fetching submissions: $e");
+    }
+  }
+
+  SubmissionStatus _parseStatus(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'paid':
+        return SubmissionStatus.paid;
+      case 'expired':
+        return SubmissionStatus.expired;
+      case 'pending':
+      default:
+        return SubmissionStatus.pending;
+    }
   }
 
   /// Filter submissions based on selected tab
@@ -130,7 +100,7 @@ class SubmissionsController extends GetxController {
 
   /// Refresh submissions
   void refreshSubmissions() {
-    loadMockSubmissions();
+    fetchSubmissions();
   }
 }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../utils/colors.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class SekureBackground extends StatelessWidget {
   final Widget child;
@@ -127,22 +128,46 @@ class PrimaryButton extends StatelessWidget {
 }
 
 class SocialLoginRow extends StatelessWidget {
-  const SocialLoginRow({super.key});
+  final VoidCallback? onGoogleTap;
+  final VoidCallback? onFacebookTap;
+  final VoidCallback? onAppleTap;
+
+  const SocialLoginRow({
+    super.key,
+    this.onGoogleTap,
+    this.onFacebookTap,
+    this.onAppleTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _socialIcon(Icons.facebook, Colors.blue),
+        _socialIcon("assets/images/facebook_logo.svg", onTap: onFacebookTap),
         const SizedBox(width: 20),
-        _socialIcon(Icons.g_mobiledata, Colors.red, size: 35),  
-        _socialIcon(Icons.apple, Colors.black),
+        _socialIcon("assets/images/google_logo.svg", onTap: onGoogleTap),
+        const SizedBox(width: 20),
+        _socialIcon("assets/images/apple_logo.svg", onTap: onAppleTap),
       ],
     );
   }
 
-  Widget _socialIcon(IconData icon, Color color, {double size = 30}) {
-    return Icon(icon, color: color, size: size);
+  Widget _socialIcon(String asset, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(10), // Optional background/padding
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.grey.shade100, // Light background for better visibility
+        ),
+        child: SvgPicture.asset(
+          asset,
+          width: 30, // Adjust size as needed
+          height: 30,
+        ),
+      ),
+    );
   }
 }

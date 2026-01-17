@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../routes/app_pages.dart';
+import '../../../services/auth_service.dart';
 
 class CreatePasswordController extends GetxController {
   // Text controllers
@@ -37,7 +38,7 @@ class CreatePasswordController extends GetxController {
            RegExp(r'[!@#$%^&*(),.?":{}|<>_]').hasMatch(password);
   }
 
-  // Mock password creation function
+  // Create password function
   Future<void> createPassword() async {
     final password = passwordController.text.trim();
     final confirmPassword = confirmPasswordController.text.trim();
@@ -90,12 +91,12 @@ class CreatePasswordController extends GetxController {
       return;
     }
 
-    // Mock password creation - always succeed for demo
+    // Real password creation
     isLoading.value = true;
     
-    // Simulate API call
-    Future.delayed(const Duration(seconds: 1), () {
-      isLoading.value = false;
+    try {
+      // Assuming user is authenticated from previous steps (Verification)
+      await Get.find<AuthService>().resetPassword(password, null);
       
       Get.snackbar(
         'Succès',
@@ -115,6 +116,16 @@ class CreatePasswordController extends GetxController {
           Get.toNamed(Routes.FACE_ID);
         }
       });
-    });
+    } catch (e) {
+      Get.snackbar(
+        'Erreur',
+        'Échec de la création du mot de passe: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 }

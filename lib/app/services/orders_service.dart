@@ -20,6 +20,19 @@ class OrdersService extends GetxService {
     }
   }
 
+  /// Create a new order
+  Future<Map<String, dynamic>> createOrder(Map<String, dynamic> orderData) async {
+    try {
+      final response = await _apiService.post(
+        ApiConfig.orders,
+        orderData,
+      );
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// Get a single order by ID
   /// 
   /// [id] - The order ID

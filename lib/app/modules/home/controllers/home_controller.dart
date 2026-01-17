@@ -7,7 +7,7 @@ class HomeController extends GetxController {
   
   // User info
   final userName = 'John Evian Sultan'.obs;
-  final userAvatar = 'https://i.pravatar.cc/150?img=11'.obs;
+  final userAvatar = ''.obs;
   
   // Sales data
   final totalSales = 9950.obs; // in Fcfa
@@ -21,54 +21,38 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadMockData();
+    fetchDashboardData();
   }
 
-  /// Load mock data for demo
-  void loadMockData() {
-    // Mock transactions
-    transactions.value = [
-      Transaction(
-        name: 'John DOE',
-        date: '01/09/25 à 19h48',
-        amount: -12000,
-        avatar: 'https://i.pravatar.cc/150?img=12',
-      ),
-      Transaction(
-        name: 'John DOE',
-        date: '01/09/25 à 19h48',
-        amount: 12000,
-        avatar: 'https://i.pravatar.cc/150?img=13',
-      ),
-      Transaction(
-        name: 'John DOE',
-        date: '01/09/25 à 19h48',
-        amount: -12000,
-        avatar: 'https://i.pravatar.cc/150?img=14',
-      ),
-      Transaction(
-        name: 'John DOE',
-        date: '01/09/25 à 19h48',
-        amount: 12000,
-        avatar: 'https://i.pravatar.cc/150?img=15',
-      ),
-    ];
+  /// Fetch dashboard data from API
+  Future<void> fetchDashboardData() async {
+    try {
+      final stats = await _dashboardService.getStats();
+      final recentTransactions = await _dashboardService.getRecentTransactions();
 
-    // Mock chart data (for the line chart)
-    chartData.value = [
-      ChartPoint(x: 0, y1: 3, y2: 1),
-      ChartPoint(x: 1, y1: 1, y2: 3),
-      ChartPoint(x: 2, y1: 4, y2: 3),
-      ChartPoint(x: 3, y1: 2, y2: 5),
-      ChartPoint(x: 4, y1: 5, y2: 2),
-      ChartPoint(x: 5, y1: 3, y2: 4),
-    ];
+      // Update sales
+      totalSales.value = int.tryParse(stats['totalRevenue']?.toString() ?? '0') ?? 0;
+
+      // Update transactions
+      transactions.value = (recentTransactions as List).map((t) => Transaction(
+        name: t['name'] ?? 'Inconnu',
+        date: t['date'] ?? '',
+        amount: int.tryParse(t['amount']?.toString() ?? '0') ?? 0,
+        avatar: t['avatar'] ?? '',
+      )).toList();
+
+      // Update chart data if available in stats
+      // For now, we might keep chart data empty or parse if structure is known
+      // chartData.value = ...
+      
+    } catch (e) {
+      print("Error loading dashboard data: $e");
+    }
   }
 
   /// Refresh data
   void refreshData() {
-    loadMockData();
-    // In real app, fetch from API
+    fetchDashboardData();
   }
 
   /// Get formatted sales amount

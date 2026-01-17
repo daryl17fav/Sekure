@@ -120,7 +120,11 @@ class LoginView extends GetView<LoginController> {
                           ),
                           
                           const SizedBox(height: 15),
-                          const SocialLoginRow(),
+                          SocialLoginRow(
+                            onGoogleTap: controller.signInWithGoogle,
+                            onFacebookTap: controller.signInWithFacebook,
+                            onAppleTap: controller.signInWithApple,
+                          ),
                           const SizedBox(height: 20),
                           
                           // Sign Up Link

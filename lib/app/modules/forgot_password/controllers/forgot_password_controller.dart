@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../services/auth_service.dart';
 
 class ForgotPasswordController extends GetxController {
   // Text controller
@@ -20,7 +21,7 @@ class ForgotPasswordController extends GetxController {
   }
 
   // Send password reset email
-  void sendResetEmail() {
+  Future<void> sendResetEmail() async {
     final email = emailController.text.trim();
 
     // Validate email
@@ -46,12 +47,11 @@ class ForgotPasswordController extends GetxController {
       return;
     }
 
-    // Mock sending reset email
+    // Real sending reset email
     isLoading.value = true;
     
-    // Simulate API call
-    Future.delayed(const Duration(seconds: 1), () {
-      isLoading.value = false;
+    try {
+      await Get.find<AuthService>().forgotPassword(email);
       
       Get.snackbar(
         'Succès',
@@ -63,10 +63,20 @@ class ForgotPasswordController extends GetxController {
       );
       
       // Navigate back to login after short delay
-      Future.delayed(const Duration(seconds: 2), () {
+      Future.delayed(const Duration(milliseconds: 500), () {
         Get.back();
       });
-    });
+    } catch (e) {
+       Get.snackbar(
+        'Erreur',
+        'Échec de l\'envoi: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 }
 

@@ -15,91 +15,30 @@ class MyOrdersController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadMockOrders();
+    fetchOrders();
   }
 
-  /// Load mock orders
-  void loadMockOrders() {
-    final now = DateTime.now();
-    final yesterday = now.subtract(const Duration(days: 1));
-    final lastWeek = now.subtract(const Duration(days: 10));
-    final lastMonth = now.subtract(const Duration(days: 40));
-
-    allOrders.value = [
-      // Today's orders
-      Order(
-        id: '1',
-        productName: "Nom de l'article",
-        clientName: 'Nom du client',
-        price: 12000,
-        date: now,
-        image: 'https://i.pravatar.cc/150?img=30',
-      ),
-      Order(
-        id: '2',
-        productName: "Nom de l'article",
-        clientName: 'Nom du client',
-        price: 12000,
-        date: now,
-        image: 'https://i.pravatar.cc/150?img=31',
-      ),
-      Order(
-        id: '3',
-        productName: "Nom de l'article",
-        clientName: 'Nom du client',
-        price: 12000,
-        date: now,
-        image: 'https://i.pravatar.cc/150?img=32',
-      ),
+  /// Load orders from API
+  Future<void> fetchOrders() async {
+    try {
+      final ordersData = await _ordersService.getAllOrders();
       
-      // Yesterday's order
-      Order(
-        id: '4',
-        productName: "Nom de l'article",
-        clientName: 'Nom du client',
-        price: 12000,
-        date: yesterday,
-        image: 'https://i.pravatar.cc/150?img=33',
-      ),
+      allOrders.value = ordersData.map((data) {
+        // Safe parsing
+        return Order(
+          id: data['id']?.toString() ?? '',
+          productName: data['productName'] ?? 'Article Inconnu',
+          clientName: data['clientName'] ?? data['vendorName'] ?? 'Vendeur Inconnu',
+          price: int.tryParse(data['price']?.toString() ?? '0') ?? 0,
+          date: DateTime.tryParse(data['date'] ?? '') ?? DateTime.now(),
+          image: data['image'] ?? '', // No more fake avatars
+        );
+      }).toList();
       
-      // Last week orders
-      Order(
-        id: '5',
-        productName: "Nom de l'article",
-        clientName: 'Nom du client',
-        price: 12000,
-        date: lastWeek,
-        image: 'https://i.pravatar.cc/150?img=34',
-      ),
-      Order(
-        id: '6',
-        productName: "Nom de l'article",
-        clientName: 'Nom du client',
-        price: 12000,
-        date: lastWeek,
-        image: 'https://i.pravatar.cc/150?img=35',
-      ),
-      Order(
-        id: '7',
-        productName: "Nom de l'article",
-        clientName: 'Nom du client',
-        price: 12000,
-        date: lastWeek,
-        image: 'https://i.pravatar.cc/150?img=36',
-      ),
-      
-      // Last month order
-      Order(
-        id: '8',
-        productName: "Nom de l'article",
-        clientName: 'Nom du client',
-        price: 12000,
-        date: lastMonth,
-        image: 'https://i.pravatar.cc/150?img=37',
-      ),
-    ];
-    
-    groupOrdersByDate();
+      groupOrdersByDate();
+    } catch (e) {
+      Get.snackbar('Erreur', 'Impossible de charger vos commandes');
+    }
   }
 
   /// Group orders by date
@@ -136,7 +75,7 @@ class MyOrdersController extends GetxController {
 
   /// Refresh orders
   void refreshOrders() {
-    loadMockOrders();
+    fetchOrders();
   }
 }
 
@@ -160,4 +99,3 @@ class Order {
 
   String get formattedPrice => '${price ~/ 1000}K Fcfa';
 }
-

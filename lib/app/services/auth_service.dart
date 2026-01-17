@@ -8,12 +8,10 @@ import 'api_service.dart';
 /// 
 /// Handles all authentication-related operations including
 /// login, registration, logout, and session management
-
 class AuthService extends GetxService {
   final ApiService _apiService = Get.find<ApiService>();
   
-  // Storage keys
-  static const String _tokenKey = 'auth_token';
+  // Storage keys (Only need to cache user data for offline/quick access, session is in cookies)
   static const String _userKey = 'user_data';
   
   // Observable user state
@@ -23,13 +21,23 @@ class AuthService extends GetxService {
   @override
   void onInit() {
     super.onInit();
-    _loadUserFromStorage();
+    // Logic moved to init() for async handling
   }
 
+  /// Async Initialization
+  Future<AuthService> init() async {
+    await _loadUserFromStorage();
+    return this;
+  }
+
+
+
   /// Login with email and password
-  Future<User> login(String email, String password) async {
+  Future<void> login(String email, String password) async {
     try {
-      final response = await _apiService.post(
+      // POST /auth/login
+      // Backend validates (and might set session).
+      await _apiService.post(
         ApiConfig.login,
         {
           'email': email,
@@ -37,67 +45,52 @@ class AuthService extends GetxService {
         },
       );
 
-      // Extract token and user from response
-      final token = response['token'] ?? response['accessToken'];
-      final userData = response['user'] ?? response['data'];
-
-      if (token == null) {
-        throw ApiException('No token received from server');
-      }
-
-      if (userData == null) {
-        throw ApiException('No user data received from server');
-      }
-
-      // Create user object
-      final user = User.fromJson(userData);
-
-      // Save token and user data
-      await _saveToken(token);
-      await _saveUser(user);
-
-      // Update state
-      currentUser.value = user;
-      isAuthenticated.value = true;
-
-      return user;
+      // Trigger OTP sending explicitly as requested
+      // await sendOtp(email); // Removed as backend handles it
     } catch (e) {
       rethrow;
     }
   }
 
   /// Register a new user
-  Future<User> register(Map<String, dynamic> userData) async {
+  Future<void> register(Map<String, dynamic> userData) async {
     try {
-      print('BACKEND_RESPONSE: Sending registration data: $userData');
-      final response = await _apiService.post(
+      // POST /auth/register
+      await _apiService.post(
         ApiConfig.register,
         userData,
       );
-      print('BACKEND_RESPONSE: Raw Response: $response');
 
-      // Check if registration requires OTP verification
-      if (response['requiresVerification'] == true || 
-          response['message']?.toString().toLowerCase().contains('verify') == true) {
-        print('BACKEND_RESPONSE: Verification trigger detected');
-        // Return a temporary user object for OTP flow
-        final tempUser = User.fromJson(response['user'] ?? userData);
-        return tempUser;
+      // Trigger OTP sending explicitly if email is available
+      // if (userData.containsKey('email')) {
+      //   await sendOtp(userData['email']);
+      // } // Removed as backend handles it
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Register a new seller
+  Future<void> registerSeller(Map<String, dynamic> sellerData) async {
+    try {
+      // Backend expects JSON, not FormData
+      final Map<String, dynamic> apiData = {
+        'email': sellerData['email'],
+        'phone': sellerData['phone'],
+        'password': sellerData['password'], 
+        'role': 'seller', // Use 'role' instead of 'isSeller' as per API docs
+      };
+
+      // Optional fields if backend supports them
+      if (sellerData['name'] != null) {
+        apiData['name'] = sellerData['name'];
       }
-      print('BACKEND_RESPONSE: No verification trigger found in response');
-
-      // If no verification needed, handle like login
-      final token = response['token'] ?? response['accessToken'];
-      final user = User.fromJson(response['user'] ?? response['data']);
-
-      if (token != null) {
-        await _saveToken(token);
-        await _saveUser(user);
-        currentUser.value = user;
-        isAuthenticated.value = true;
+      if (sellerData['location'] != null) {
+        apiData['location'] = sellerData['location'];
       }
 
-      return user;
+      // We call our modified register, which triggers sendOtp
+      await register(apiData);
     } catch (e) {
       rethrow;
     }
@@ -106,7 +99,10 @@ class AuthService extends GetxService {
   /// Verify OTP
   Future<User> verifyOtp(String email, String otp) async {
     try {
-      final response = await _apiService.post(
+      // POST /auth/verify-otp
+      // The backend validates OTP and sets the Session Cookie in the response header.
+      // Dio persistence will automatically save this cookie.
+      await _apiService.post(
         ApiConfig.verifyOtp,
         {
           'email': email,
@@ -114,22 +110,54 @@ class AuthService extends GetxService {
         },
       );
 
-      final token = response['token'] ?? response['accessToken'];
-      final userData = response['user'] ?? response['data'];
-
-      if (token == null || userData == null) {
-        throw ApiException('Invalid verification response');
+      // Now we have a session. Fetch the user profile to confirm and get details.
+      final user = await getCurrentUser();
+      
+      if (user == null) {
+         throw ApiException('Verification successful but failed to fetch user profile.');
       }
 
-      final user = User.fromJson(userData);
-
-      await _saveToken(token);
-      await _saveUser(user);
-
-      currentUser.value = user;
       isAuthenticated.value = true;
-
       return user;
+    } catch (e) {
+      // If verification fails or fetching user fails
+      rethrow;
+    }
+  }
+
+  /// Forgot Password
+  Future<void> forgotPassword(String email) async {
+    try {
+      await _apiService.post(
+        ApiConfig.forgotPassword,
+        {'email': email},
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+  
+  /// Reset Password
+  Future<void> resetPassword(String password, String? token) async {
+    if (isAuthenticated.value) {
+       try {
+         await _apiService.post("auth/reset-password", {'password': password});
+       } catch (e) {
+         rethrow;
+       }
+    } else {
+      throw ApiException('User must be authenticated to set password');
+    }
+  }
+
+  /// Resend OTP
+  Future<void> resendOtp(String email) async {
+    try {
+      // Use the new endpoint for resending as well
+      await _apiService.post(
+        ApiConfig.resendOtp,
+        {'email': email},
+      );
     } catch (e) {
       rethrow;
     }
@@ -138,14 +166,17 @@ class AuthService extends GetxService {
   /// Logout current user
   Future<void> logout() async {
     try {
-      // Try to call logout endpoint (optional, may fail if token expired)
+      // Call backend logout
       try {
         await _apiService.post(ApiConfig.logout, {});
       } catch (e) {
-        // Ignore logout endpoint errors
+        // Ignore specific API logout errors (e.g. already logged out)
       }
 
-      // Clear local storage
+      // Clear cookies
+      await _apiService.clearCookies();
+
+      // Clear local user data
       await _clearStorage();
 
       // Update state
@@ -156,24 +187,36 @@ class AuthService extends GetxService {
     }
   }
 
-  /// Get current user from backend
+  /// Get current user from backend (Session check)
   Future<User?> getCurrentUser() async {
     try {
-      final token = await getToken();
-      if (token == null) return null;
-
+      // This request will send the persistent cookie automatically.
       final response = await _apiService.get(ApiConfig.me);
-      final userData = response['user'] ?? response['data'];
+      
+      // Adaptation to backend response structure
+      // Response might be { user: {...} } or just {...} or { data: {...} }
+      final userData = response['user'] ?? response['data'] ?? response;
 
-      if (userData == null) return null;
+      if (userData == null || (userData is Map && userData.isEmpty)) return null;
 
-      final user = User.fromJson(userData);
+      // Check if userData looks like a user (has email/id)
+      // Safely parsing:
+      User user;
+      try {
+         user = User.fromJson(userData);
+      } catch (e) {
+         // If parsing fails, maybe response wasn't a user object?
+         // If unauthorized, ApiService usually throws. 
+         return null;
+      }
+      
       currentUser.value = user;
+      isAuthenticated.value = true;
       await _saveUser(user);
 
       return user;
     } catch (e) {
-      // If getting current user fails, clear session
+      // If unauthorized (401), ApiService throws. Use that to assume logged out.
       await _clearStorage();
       currentUser.value = null;
       isAuthenticated.value = false;
@@ -181,43 +224,56 @@ class AuthService extends GetxService {
     }
   }
 
-  /// Get stored authentication token
-  Future<String?> getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_tokenKey);
-  }
-
-  /// Save authentication token
-  Future<void> _saveToken(String token) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_tokenKey, token);
-  }
-
-  /// Save user data
+  /// Save user data cache
   Future<void> _saveUser(User user) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_userKey, user.toJson().toString());
   }
 
-  /// Load user from storage on app start
+  /// Load user from storage on app start (Optimistic, then verify)
   Future<void> _loadUserFromStorage() async {
     try {
-      final token = await getToken();
-      if (token != null) {
-        // Token exists, try to get current user
-        await getCurrentUser();
+      // 1. Try to load cached user for immediate UI
+      final prefs = await SharedPreferences.getInstance();
+      final userStr = prefs.getString(_userKey);
+      
+      if (userStr != null) {
+         // Just show cached user temporarily?
+         // Often better to verify session.
       }
+      
+      // 2. Perform real session check
+      await getCurrentUser();
+      
     } catch (e) {
-      // Failed to load user, clear storage
       await _clearStorage();
     }
   }
 
-  /// Clear all stored authentication data
+  /// Clear all stored user cache
   Future<void> _clearStorage() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_tokenKey);
     await prefs.remove(_userKey);
+  }
+
+  /// Force clear all auth data (Nuclear option for 409/429/Debug)
+  Future<void> forceClearAuth() async {
+    try {
+      // 1. Clear Cookies (Session)
+      await _apiService.clearCookies();
+
+      // 2. Clear Local Storage (Cache)
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear(); // We can stick to clear() as requested by user or just remove userKey
+
+      // 3. Reset State
+      currentUser.value = null;
+      isAuthenticated.value = false;
+      
+      print('AuthService: Nuclear clear executed.');
+    } catch (e) {
+      print('AuthService: Failed to force clear: $e');
+    }
   }
 
   /// Check if user is authenticated

@@ -1,33 +1,23 @@
-/// API Configuration
-/// 
-/// Update these values based on your environment
-
 class ApiConfig {
-  // Development URL (local network)
-  static const String devBaseUrl = "http://192.168.43.164:3000/api";
   
-  // Production URL (update when deploying)
-  static const String prodBaseUrl = "https://your-production-url.com/api";
+   static const String devBaseUrl = "http://192.168.43.164:3000/api";
   
-  // Current environment
-  static const bool isProduction = false;
+ 
+  static const String prodBaseUrl = "https://sekurpay.onrender.com/api";
   
-  // Get the appropriate base URL
+   static const bool isProduction = true;
+  
+ 
   static String get baseUrl => isProduction ? prodBaseUrl : devBaseUrl;
   
-  // ========================================
-  // API ENDPOINTS
-  // ========================================
-  
   // AUTH ENDPOINTS
-  static const String login = "auth/login";
-  static const String register = "auth/register";
-  static const String registerSeller = "auth/register/seller";
-  static const String logout = "auth/logout";
-  static const String me = "auth/me";
-  static const String forgotPassword = "auth/forgot-password";
-  static const String verifyOtp = "auth/verify-otp";
-  static const String resendOtp = "auth/resend-otp";
+  static const String login = "/auth/login";
+  static const String register = "/auth/register";
+  static const String logout = "/auth/logout";
+  static const String me = "/auth/me";
+  static const String verifyOtp = "/auth/verify-otp";
+  static const String forgotPassword = "/auth/forgot-password"; 
+  static const String resendOtp = "/auth/resend-otp";
   
   // DASHBOARD ENDPOINTS
   static const String dashboardStats = "dashboard/stats";

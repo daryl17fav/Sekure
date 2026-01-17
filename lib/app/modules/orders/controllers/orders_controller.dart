@@ -20,62 +20,53 @@ class OrdersController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadMockOrders();
+    fetchOrders();
   }
 
-  /// Load mock orders
-  Future<void> loadMockOrders() async {
+  /// Fetch orders from API
+  Future<void> fetchOrders() async {
     isLoading.value = true;
-    
-    // Simulate network delay
-    await Future.delayed(const Duration(seconds: 1));
-    
-    allOrders.value = [
-      OrderCommand(
-        id: '1',
-        productName: "Nom de l'article",
-        clientName: 'Nom du client',
-        price: 12000,
-        status: OrderStatus.pending,
-        image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400',
-      ),
-      OrderCommand(
-        id: '2',
-        productName: "Nom de l'article",
-        clientName: 'Nom du client',
-        price: 12000,
-        status: OrderStatus.pending,
-        image: 'https://images.unsplash.com/photo-1567016432779-094069958ea5?w=400',
-      ),
-      OrderCommand(
-        id: '3',
-        productName: "Nom de l'article",
-        clientName: 'Nom du client',
-        price: 12000,
-        status: OrderStatus.paid,
-        image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400',
-      ),
-      OrderCommand(
-        id: '4',
-        productName: "Nom de l'article",
-        clientName: 'Nom du client',
-        price: 12000,
-        status: OrderStatus.paid,
-        image: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=400',
-      ),
-      OrderCommand(
-        id: '5',
-        productName: "Nom de l'article",
-        clientName: 'Nom du client',
-        price: 12000,
-        status: OrderStatus.refused,
-        image: 'https://images.unsplash.com/photo-1540574163026-643ea20ade25?w=400',
-      ),
-    ];
-    
-    // Initially show all
-    filterOrders();
-    isLoading.value = false;
+    try {
+      final ordersData = await _ordersService.getAllOrders();
+      
+      allOrders.value = ordersData.map((data) => OrderCommand(
+        id: data['id']?.toString() ?? '',
+        productName: data['productName'] ?? 'Produit inconnu',
+        clientName: data['clientName'] ?? 'Client inconnu',
+        // Handle price parsing safely
+        price: int.tryParse(data['price']?.toString() ?? '0') ?? 0,
+        status: _parseStatus(data['status']),
+        image: data['image'] ?? '',
+      )).toList();
+      
+      // Apply current filter
+      filterOrders();
+    } catch (e) {
+      Get.snackbar(
+        'Erreur',
+        'Impossible de charger les commandes: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.theme.colorScheme.error,
+        colorText: Get.theme.colorScheme.onError,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  OrderStatus _parseStatus(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'paid':
+      case 'payé':
+        return OrderStatus.paid;
+      case 'refused':
+      case 'refusé':
+        return OrderStatus.refused;
+      case 'pending':
+      case 'en attente':
+      default:
+        return OrderStatus.pending;
+    }
   }
 
   /// Filter orders based on selected tab
@@ -131,7 +122,7 @@ class OrdersController extends GetxController {
 
   /// Refresh orders
   void refreshOrders() {
-    loadMockOrders();
+    fetchOrders();
   }
 }
 

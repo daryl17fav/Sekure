@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../../services/orders_service.dart';
+import '../../../services/users_service.dart';
 
 class CreateOrderController extends GetxController {
   // Text controllers
@@ -14,13 +17,34 @@ class CreateOrderController extends GetxController {
   final selectedVendor = Rxn<String>(); // Nullable observable
   final selectedImage = Rxn<String>(); // Image path
   
-  // List of vendors (mock data)
-  final vendors = <String>[
-    'M. Martins AZEMIN',
-    'Mme. Sophie DURAND',
-    'M. Jean KOUASSI',
-    'Mme. Marie TOURE',
-  ].obs;
+  final UsersService _usersService = Get.find<UsersService>();
+
+  @override
+  void onInit() {
+    super.onInit();
+    fetchVendors();
+  }
+
+  // List of vendors
+  final vendors = <String>[].obs;
+
+  /// Fetch vendors from API
+  Future<void> fetchVendors() async {
+    try {
+      final users = await _usersService.getAllUsers();
+      // Filter for sellers/vendors if role is available, otherwise take all or specific mapping
+      // Assuming user object has 'role' or similar, or just name
+      // For now, mapping all users to names as fallback for "Remove All Mock Data"
+      
+      vendors.value = users.map<String>((u) {
+        return u['name']?.toString() ?? u['email']?.toString() ?? 'Inconnu';
+      }).toList();
+      
+      // If list is empty (no backend data), we might want to keep generic or handle empty
+    } catch (e) {
+      Get.snackbar('Erreur', 'Impossible de charger les vendeurs');
+    }
+  }
 
   @override
   void onClose() {
@@ -37,19 +61,93 @@ class CreateOrderController extends GetxController {
     selectedVendor.value = vendor;
   }
 
-  /// Pick image (mock)
-  void pickImage() {
-    // In real app, use image_picker package
-    selectedImage.value = 'mock_image.jpg';
-    
-    Get.snackbar(
-      'Succès',
-      'Image sélectionnée',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 1),
+  /// Pick image (Real)
+  Future<void> pickImage() async {
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "Sélectionner une source",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildSourceOption(
+                  icon: Icons.camera_alt,
+                  label: "Caméra",
+                  onTap: () => _pickImage(ImageSource.camera),
+                ),
+                _buildSourceOption(
+                  icon: Icons.photo_library,
+                  label: "Galerie",
+                  onTap: () => _pickImage(ImageSource.gallery),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
+  }
+
+  Widget _buildSourceOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        Get.back(); // Close bottom sheet
+        onTap();
+      },
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 30,
+            backgroundColor: Colors.grey[200],
+            child: Icon(icon, size: 30, color: Colors.blue),
+          ),
+          const SizedBox(height: 8),
+          Text(label),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: source);
+      
+      if (image != null) {
+        selectedImage.value = image.path;
+        Get.snackbar(
+          'Succès',
+          'Image sélectionnée',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 1),
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Erreur',
+        'Impossible de sélectionner l\'image',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
   }
 
   /// Validate email
@@ -64,7 +162,7 @@ class CreateOrderController extends GetxController {
   }
 
   /// Create order
-  void createOrder() {
+  Future<void> createOrder() async {
     final productName = productNameController.text.trim();
     final price = priceController.text.trim();
     final phone = phoneController.text.trim();
@@ -165,16 +263,37 @@ class CreateOrderController extends GetxController {
       return;
     }
 
-    // Mock order creation
+    // Real order creation
     isLoading.value = true;
     
-    // Simulate API call
-    Future.delayed(const Duration(seconds: 1), () {
-      isLoading.value = false;
+    try {
+      // Prepare data
+      final orderData = {
+        'productName': productName,
+        'price': price,
+        'vendorName': selectedVendor.value,
+        'buyerPhone': phone,
+        'buyerEmail': email,
+        'productLink': productLink,
+        'status': 'pending', // Default status
+        'image': selectedImage.value,
+      };
+
+      await Get.find<OrdersService>().createOrder(orderData);
       
       // Show success dialog
       showSuccessDialog();
-    });
+    } catch (e) {
+      Get.snackbar(
+        'Erreur',
+        'Échec de la création de la commande: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   /// Show success dialog

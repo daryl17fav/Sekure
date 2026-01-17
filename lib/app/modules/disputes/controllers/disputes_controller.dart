@@ -20,62 +20,46 @@ class DisputesController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadMockDisputes();
+    fetchDisputes();
   }
 
-  /// Load mock disputes
-  Future<void> loadMockDisputes() async {
+  /// Fetch disputes from API
+  Future<void> fetchDisputes() async {
     isLoading.value = true;
-    
-    // Simulate network delay
-    await Future.delayed(const Duration(seconds: 1));
-    
-    allDisputes.value = [
-      Dispute(
-        id: '1',
-        productName: "Nom de l'article",
-        vendorName: 'M. Martins AZEMIN',
-        amount: 12000,
-        status: DisputeStatus.pending,
-        image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400',
-      ),
-      Dispute(
-        id: '2',
-        productName: "Nom de l'article",
-        vendorName: 'M. Martins AZEMIN',
-        amount: 12000,
-        status: DisputeStatus.pending,
-        image: 'https://images.unsplash.com/photo-1567016432779-094069958ea5?w=400',
-      ),
-      Dispute(
-        id: '3',
-        productName: "Nom de l'article",
-        vendorName: 'M. Martins AZEMIN',
-        amount: 12000,
-        status: DisputeStatus.resolved,
-        image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400',
-      ),
-      Dispute(
-        id: '4',
-        productName: "Nom de l'article",
-        vendorName: 'M. Martins AZEMIN',
-        amount: 12000,
-        status: DisputeStatus.resolved,
-        image: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=400',
-      ),
-      Dispute(
-        id: '5',
-        productName: "Nom de l'article",
-        vendorName: 'M. Martins AZEMIN',
-        amount: 12000,
-        status: DisputeStatus.pending,
-        image: 'https://images.unsplash.com/photo-1540574163026-643ea20ade25?w=400',
-      ),
-    ];
-    
-    filterDisputes();
-    isLoading.value = false;
+    try {
+      final disputesData = await _disputesService.getAllDisputes();
+      
+      allDisputes.value = disputesData.map((data) {
+        return Dispute(
+          id: data['id']?.toString() ?? '',
+          productName: data['productName'] ?? 'Produit Inconnu',
+          vendorName: data['vendorName'] ?? 'Vendeur Inconnu',
+          amount: int.tryParse(data['amount']?.toString() ?? '0') ?? 0,
+          status: _parseStatus(data['status']),
+          image: data['image'] ?? '', // No fake images
+        );
+      }).toList();
+      
+      filterDisputes();
+    } catch (e) {
+      Get.snackbar('Erreur', 'Impossible de charger les litiges');
+    } finally {
+      isLoading.value = false;
+    }
   }
+
+  DisputeStatus _parseStatus(String? status) {
+    if (status == null) return DisputeStatus.pending;
+    switch (status.toLowerCase()) {
+      case 'resolved':
+      case 'closed':
+        return DisputeStatus.resolved;
+      default:
+        return DisputeStatus.pending;
+    }
+  }
+ 
+  /// Load mock disputes (Removed)
 
   /// Filter disputes based on selected tab
   void filterDisputes() {

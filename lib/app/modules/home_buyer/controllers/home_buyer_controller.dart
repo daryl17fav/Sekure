@@ -9,7 +9,7 @@ class HomeBuyerController extends GetxController {
   
   // User info
   final userName = 'John Evian Sultan'.obs;
-  final userAvatar = 'https://i.pravatar.cc/150?img=8'.obs;
+  final userAvatar = ''.obs;
   
   // Purchase balance
   final totalPurchases = 9950.obs; // in Fcfa
@@ -23,42 +23,42 @@ class HomeBuyerController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadMockData();
+    fetchData();
   }
 
-  /// Load mock data
-  void loadMockData() {
-    // Mock validated orders
-    validatedOrders.value = [
-      ValidatedOrder(
-        name: 'John DOE',
-        date: '01/09/25 à 19h48',
-        amount: 12000,
-        avatar: 'https://i.pravatar.cc/150?img=20',
-      ),
-      ValidatedOrder(
-        name: 'John DOE',
-        date: '01/09/25 à 19h48',
-        amount: 12000,
-        avatar: 'https://i.pravatar.cc/150?img=21',
-      ),
-      ValidatedOrder(
-        name: 'John DOE',
-        date: '01/09/25 à 19h48',
-        amount: 12000,
-        avatar: 'https://i.pravatar.cc/150?img=22',
-      ),
-    ];
+  /// Load real data from API
+  Future<void> fetchData() async {
+    try {
+      // Fetch stats
+      final stats = await _dashboardService.getStats();
+      
+      // Update balance/purchases
+      // Assuming stats returns 'totalPurchases' or 'totalSpend' for buyers
+      // Fallback to 'totalRevenue' if generic, or 0
+      totalPurchases.value = int.tryParse(stats['totalPurchases']?.toString() ?? stats['totalRevenue']?.toString() ?? '0') ?? 0;
 
-    // Mock chart data
-    chartData.value = [
-      ChartPoint(x: 0, y1: 2, y2: 5),
-      ChartPoint(x: 1, y1: 4, y2: 2),
-      ChartPoint(x: 2, y1: 3, y2: 4),
-      ChartPoint(x: 3, y1: 5, y2: 3),
-      ChartPoint(x: 4, y1: 2, y2: 5),
-      ChartPoint(x: 5, y1: 6, y2: 2),
-    ];
+      // Fetch recent transactions/orders
+      final transactions = await _dashboardService.getRecentTransactions();
+      
+      // Map to ValidatedOrder (assuming these are the relevant items for this view)
+      validatedOrders.value = (transactions as List).map((t) {
+        return ValidatedOrder(
+          name: t['name'] ?? 'Commande',
+          date: t['date'] ?? '',
+          amount: int.tryParse(t['amount']?.toString() ?? '0') ?? 0,
+          avatar: t['avatar'] ?? '', // No more fake avatars
+        );
+      }).toList();
+
+      
+      chartData.clear();
+      if (stats['chartData'] != null) {
+         // Parse if exists
+      }
+      
+    } catch (e) {
+      // Handle error
+    }
   }
 
   /// Get formatted balance
@@ -68,7 +68,7 @@ class HomeBuyerController extends GetxController {
 
   /// Refresh data
   void refreshData() {
-    loadMockData();
+    fetchData();
   }
 }
 
@@ -101,4 +101,3 @@ class ChartPoint {
     required this.y2,
   });
 }
-

@@ -20,30 +20,49 @@ class BuyerOrdersListController extends GetxController {
     'Refusés',
   ];
 
-  // Mock order data
-  final allOrders = [
-    {'title': 'John DOE', 'subtitle': '01/09/25 à 19h48', 'price': '12.000 Fcfa', 'status': 'En attente'},
-    {'title': 'Jane SMITH', 'subtitle': '02/09/25 à 10h30', 'price': '25.000 Fcfa', 'status': 'En attente'},
-    {'title': 'Bob MARTIN', 'subtitle': '03/09/25 à 14h15', 'price': '18.500 Fcfa', 'status': 'En cours'},
-    {'title': 'Alice DURAND', 'subtitle': '04/09/25 à 16h20', 'price': '30.000 Fcfa', 'status': 'En cours'},
-    {'title': 'Tom BERNARD', 'subtitle': '05/09/25 à 09h45', 'price': '15.000 Fcfa', 'status': 'Payés'},
-    {'title': 'Sarah PETIT', 'subtitle': '06/09/25 à 11h00', 'price': '22.000 Fcfa', 'status': 'Payés'},
-    {'title': 'Marc DUBOIS', 'subtitle': '07/09/25 à 13h30', 'price': '19.000 Fcfa', 'status': 'Refusés'},
-    {'title': 'Emma LAURENT', 'subtitle': '08/09/25 à 15h45', 'price': '28.000 Fcfa', 'status': 'Refusés'},
-  ];
+  // Orders list
+  final allOrders = <Map<String, dynamic>>[].obs;
 
   @override
   void onInit() {
     super.onInit();
-    loadOrders();
+    fetchOrders();
   }
   
-  /// Load orders with simulated delay
-  Future<void> loadOrders() async {
+  /// Fetch orders from API
+  Future<void> fetchOrders() async {
     isLoading.value = true;
-    // Simulate network delay
-    await Future.delayed(const Duration(seconds: 1));
-    isLoading.value = false;
+    try {
+      final orders = await _ordersService.getAllOrders();
+      
+      allOrders.value = orders.map((order) {
+        // Map backend fields to UI fields
+        return {
+          'title': order['productName'] ?? 'Commande sans nom',
+          'subtitle': order['date'] ?? '', // Format date properly if needed
+          'price': '${order['price'] ?? 0} Fcfa',
+          'status': _mapStatus(order['status'] ?? ''),
+          'originalStatus': order['status'] ?? '',
+        };
+      }).toList();
+    } catch (e) {
+      Get.snackbar('Erreur', 'Impossible de charger les commandes');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  String _mapStatus(String backendStatus) {
+    // Simple mapping to match UI tabs
+    switch (backendStatus.toLowerCase()) {
+      case 'pending': return 'En attente';
+      case 'processing': return 'En cours';
+      case 'completed': 
+      case 'paid': return 'Payés';
+      case 'cancelled': 
+      case 'rejected': return 'Refusés';
+      default: return 'Inconnu';
+    }
   }
 
   @override
@@ -57,7 +76,7 @@ class BuyerOrdersListController extends GetxController {
   }
 
   // Get filtered orders based on selected tab
-  List<Map<String, String>> get filteredOrders {
+  List<Map<String, dynamic>> get filteredOrders {
     if (selectedTabIndex.value == 0) {
       // Show all orders
       return allOrders;

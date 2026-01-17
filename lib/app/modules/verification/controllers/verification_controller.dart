@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../routes/app_pages.dart';
 
+import '../../../services/auth_service.dart';
+
 class VerificationController extends GetxController {
   // OTP Text Controllers (5 digits)
   final otp1Controller = TextEditingController();
@@ -89,28 +91,41 @@ class VerificationController extends GetxController {
     });
   }
 
+  final AuthService _authService = Get.find<AuthService>();
+
   /// Resend OTP code
-  void resendOTP() {
+  Future<void> resendOTP() async {
     if (!canResend.value) return;
 
-    // Clear all OTP fields
-    clearOTP();
+    try {
+      await _authService.resendOtp(userEmail.value);
+      
+      // Clear all OTP fields
+      clearOTP();
 
-    // Mock API call to resend OTP
-    Get.snackbar(
-      'Code envoyé',
-      'Un nouveau code a été envoyé à ${maskedEmail.value}',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 2),
-    );
+      Get.snackbar(
+        'Code envoyé',
+        'Un nouveau code a été envoyé à ${maskedEmail.value}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
 
-    // Restart timer
-    startTimer();
+      // Restart timer
+      startTimer();
 
-    // Focus first field
-    otp1Focus.requestFocus();
+      // Focus first field
+      otp1Focus.requestFocus();
+    } catch (e) {
+      Get.snackbar(
+        'Erreur',
+        'Impossible de renvoyer le code: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
   }
 
   /// Clear all OTP fields
@@ -198,13 +213,11 @@ class VerificationController extends GetxController {
       return;
     }
 
-    // Mock verification - simulate API call
     isVerifying.value = true;
 
-    Future.delayed(const Duration(seconds: 1), () {
-      isVerifying.value = false;
+    try {
+      await _authService.verifyOtp(userEmail.value, code);
 
-      // Mock: Accept any 5-digit code for demo
       Get.snackbar(
         'Succès',
         'Vérification réussie!',
@@ -214,12 +227,30 @@ class VerificationController extends GetxController {
         duration: const Duration(seconds: 2),
       );
 
-      // Navigate to password creation
+      // Navigate to password creation or dashboard depending on flow
+      // Assuming register flow leads to role based dashboard or setup
+      // User requested "verification send the otp to the email how hard is that" implying correct flow
+      // Original code navigated to CREATE_PASSWORD. Keeping that flow if it's correct for the user app.
+      
       Future.delayed(const Duration(milliseconds: 500), () {
         final String? role = Get.arguments is Map ? Get.arguments['role'] : Get.arguments as String?;
+        // If the backend verification returns a token/user, we might be logged in now.
+        // If the flow is Register -> Verify -> Create Password, then proceed.
+        // If user is already created, maybe go home?
+        // Sticking to original navigation but with real auth check pass
         Get.toNamed(Routes.CREATE_PASSWORD, arguments: role);
       });
-    });
+    } catch (e) {
+      Get.snackbar(
+        'Erreur',
+        'Échec de la vérification: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isVerifying.value = false;
+    }
   }
 
   /// Mask email for privacy (abc...xyz@gmail.com)

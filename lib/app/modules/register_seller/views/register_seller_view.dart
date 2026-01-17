@@ -56,6 +56,13 @@ class RegisterSellerView extends GetView<RegisterSellerController> {
                             controller: controller.emailController,
                             keyboardType: TextInputType.emailAddress,
                           ),
+                          Obx(() => CustomTextField(
+                            hint: "Mot de passe*",
+                            controller: controller.passwordController,
+                            isPassword: !controller.isPasswordVisible.value,
+                            suffixIcon: controller.isPasswordVisible.value ? Icons.visibility : Icons.visibility_off,
+                            onSuffixIconTap: controller.togglePasswordVisibility,
+                          )),
                           CustomTextField(
                             hint: "Localisation*",
                             controller: controller.locationController,
