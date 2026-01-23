@@ -13,19 +13,26 @@ class RegisterController extends GetxController {
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
   final emailController = TextEditingController();
-  final locationController = TextEditingController();
+  final passwordController = TextEditingController();
+  final locationController = TextEditingController(); // Kept for UI but unsupported by backend
   
   // Observable for file selection
   final selectedFile = Rxn<String>();
   final isLoading = false.obs;
+  final isPasswordVisible = false.obs;
 
   @override
   void onClose() {
     nameController.dispose();
     phoneController.dispose();
     emailController.dispose();
+    passwordController.dispose();
     locationController.dispose();
     super.onClose();
+  }
+
+  void togglePasswordVisibility() {
+    isPasswordVisible.value = !isPasswordVisible.value;
   }
 
   // Email validation
@@ -47,6 +54,7 @@ class RegisterController extends GetxController {
     final name = nameController.text.trim();
     final phone = phoneController.text.trim();
     final email = emailController.text.trim();
+    final password = passwordController.text.trim();
     final location = locationController.text.trim();
 
     // Validate name
@@ -107,6 +115,18 @@ class RegisterController extends GetxController {
       return;
     }
 
+    // Validate password
+    if (password.isEmpty || password.length < 8) {
+      Get.snackbar(
+        'Erreur',
+        'Le mot de passe doit contenir au moins 8 caractères',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
     // Validate location
     if (location.isEmpty) {
       Get.snackbar(
@@ -136,27 +156,30 @@ class RegisterController extends GetxController {
     isLoading.value = true;
     
     try {
+      // STRICT PAYLOAD: Only sending fields supported by the API documentation
       final userData = {
-        'name': name,
-        'phone': phone,
         'email': email,
-        'location': location,
-        // Note: File upload will need multipart/form-data handling
-        // For now, we'll just send the filename
-        'identityDocument': selectedFile.value,
+        'password': password,
+        'phone': phone,
+        'role': 'buyer',
       };
 
-      final user = await _authService.register(userData);
+      // TODO: Uncomment when backend supports these fields
+      // 'name': name,
+      // 'location': location,
+      // 'identityDocument': selectedFile.value,
+
+      await _authService.register(userData);
       
       isLoading.value = false;
       
       Get.snackbar(
         'Succès',
-        'Inscription réussie! Vérifiez votre email pour le code OTP.',
+        'Inscription réussie! Vérifiez votre email.\n(Note: Le téléchargement de la pièce d\'identité est temporairement désactivé par le serveur)',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.green,
         colorText: Colors.white,
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 4),
       );
       
       // Navigate to OTP verification screen

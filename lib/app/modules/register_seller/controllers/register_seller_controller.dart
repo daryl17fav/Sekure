@@ -171,11 +171,11 @@ class RegisterSellerController extends GetxController {
       
       Get.snackbar(
         'Succès',
-        'Inscription réussie! Vérifiez votre email.',
+        'Inscription réussie! Vérifiez votre email.\n(Note: Le téléchargement de la pièce d\'identité est temporairement désactivé par le serveur)',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.green,
         colorText: Colors.white,
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 4),
       );
       
       // Navigate to verification page

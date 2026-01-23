@@ -74,20 +74,22 @@ class AuthService extends GetxService {
   Future<void> registerSeller(Map<String, dynamic> sellerData) async {
     try {
       // Backend expects JSON, not FormData
+      // STRICT PAYLOAD: Only sending fields supported by the API documentation
       final Map<String, dynamic> apiData = {
         'email': sellerData['email'],
         'phone': sellerData['phone'],
         'password': sellerData['password'], 
-        'role': 'seller', // Use 'role' instead of 'isSeller' as per API docs
+        'role': 'seller', 
       };
 
-      // Optional fields if backend supports them
-      if (sellerData['name'] != null) {
-        apiData['name'] = sellerData['name'];
-      }
-      if (sellerData['location'] != null) {
-        apiData['location'] = sellerData['location'];
-      }
+      // TODO: Uncomment when backend supports these fields
+      // if (sellerData['name'] != null) {
+      //   apiData['name'] = sellerData['name'];
+      // }
+      // if (sellerData['location'] != null) {
+      //   apiData['location'] = sellerData['location'];
+      // }
+      // idCardImage is also ignored as there is no upload endpoint
 
       // We call our modified register, which triggers sendOtp
       await register(apiData);

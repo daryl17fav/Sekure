@@ -16,8 +16,13 @@ class ApiConfig {
   static const String logout = "/auth/logout";
   static const String me = "/auth/me";
   static const String verifyOtp = "/auth/verify-otp";
+  // The following are not explicitly in the docs but often standard. 
+  // Keeping them but marking as unverified.
   static const String forgotPassword = "/auth/forgot-password"; 
   static const String resendOtp = "/auth/resend-otp";
+  
+  // GENERAL
+  static const String health = "/health";
   
   // DASHBOARD ENDPOINTS
   static const String dashboardStats = "dashboard/stats";
